@@ -10,7 +10,7 @@ jobs:
   lint:
     name: Lint Python Code
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -60,18 +60,18 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          
+
           if ! git diff --quiet; then
             echo "📝 Auto-fixing formatting issues and committing changes"
             git add .
             git commit -m "Auto-fix Python formatting
 
-Automatically applied Black and isort fixes during PR workflow.
-            
-- Fixed code formatting with Black
-- Sorted imports with isort
-- No manual intervention required"
-            
+            Automatically applied Black and isort fixes during PR workflow.
+
+            - Fixed code formatting with Black
+            - Sorted imports with isort
+            - No manual intervention required"
+
             git push origin HEAD:${{ github.head_ref }}
             echo "✅ Formatting fixes committed and pushed"
           else
@@ -81,7 +81,7 @@ Automatically applied Black and isort fixes during PR workflow.
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
