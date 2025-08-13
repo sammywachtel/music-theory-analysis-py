@@ -1,12 +1,61 @@
 """
 Functional harmony analysis engine.
+
+Implements comprehensive functional harmony analysis with complete Roman numeral
+generation, chromatic chord detection, and figured bass notation.
 """
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from .types import ChordFunction, ChromaticType, ProgressionType
 from .chord_logic import ChordMatch, find_chord_matches, determine_chord_function
 from .scales import NOTE_TO_PITCH_CLASS, PITCH_CLASS_NAMES
+
+
+# Enhanced Roman numeral templates with chromatic chord support
+FUNCTIONAL_ROMAN_NUMERALS = {
+    'major': {
+        'diatonic': ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°'],
+        'chromatic': {
+            # Secondary dominants (used as fallback for non-dominant quality chords at these intervals)
+            2: 'V/V',     # D7 - Dominant of V (very common)
+            4: 'V/vi',    # E7 - Dominant of vi
+            9: 'V/ii',    # A7 - Dominant of ii
+            11: 'V/iii',  # B7 - Dominant of iii
+        }
+    },
+    'minor': {
+        'diatonic': ['i', 'ii°', 'III', 'iv', 'v', 'VI', 'VII'],
+        'chromatic': {
+            # Secondary dominants
+            2: 'V/III',   # Dominant of III
+            5: 'V/iv',    # Dominant of iv
+            7: 'V/v',     # Dominant of v
+            9: 'V/VI',    # Dominant of VI
+            11: 'V/VII',  # Dominant of VII
+            
+            # Common chromatic chords in minor keys
+            4: '#iv°',    # Raised 4th diminished
+        }
+    }
+}
+
+# Chord function mapping based on Roman numeral degree
+CHORD_FUNCTIONS: Dict[int, Dict[str, ChordFunction]] = {
+    # Major key functions
+    0: {'major': ChordFunction.TONIC, 'minor': ChordFunction.TONIC},        # I/i
+    1: {'major': ChordFunction.CHROMATIC, 'minor': ChordFunction.CHROMATIC}, # Chromatic
+    2: {'major': ChordFunction.PREDOMINANT, 'minor': ChordFunction.PREDOMINANT}, # ii/ii°
+    3: {'major': ChordFunction.CHROMATIC, 'minor': ChordFunction.TONIC},    # iii/III - chromatic in major, tonic in minor
+    4: {'major': ChordFunction.PREDOMINANT, 'minor': ChordFunction.PREDOMINANT}, # iii/III
+    5: {'major': ChordFunction.SUBDOMINANT, 'minor': ChordFunction.SUBDOMINANT}, # IV/iv
+    6: {'major': ChordFunction.CHROMATIC, 'minor': ChordFunction.CHROMATIC}, # Tritone
+    7: {'major': ChordFunction.DOMINANT, 'minor': ChordFunction.DOMINANT},  # V/v
+    8: {'major': ChordFunction.CHROMATIC, 'minor': ChordFunction.CHROMATIC}, # Chromatic
+    9: {'major': ChordFunction.TONIC, 'minor': ChordFunction.SUBDOMINANT},  # vi/VI - relative minor/submediant
+    10: {'major': ChordFunction.CHROMATIC, 'minor': ChordFunction.SUBDOMINANT}, # bVII - modal in major, natural in minor
+    11: {'major': ChordFunction.LEADING_TONE, 'minor': ChordFunction.LEADING_TONE} # vii°/VII
+}
 
 
 @dataclass
@@ -58,21 +107,10 @@ class FunctionalAnalysisResult:
 
 
 class FunctionalHarmonyAnalyzer:
-    """Analyzer for functional harmony progressions."""
+    """Main functional harmony analyzer class with comprehensive Roman numeral generation."""
     
     def __init__(self):
-        # Roman numeral templates
-        self.major_romans = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°']
-        self.minor_romans = ['i', 'ii°', 'III', 'iv', 'V', 'VI', 'VII']
-        
-        # Secondary dominant patterns
-        self.secondary_dominants = {
-            2: 'V/V',    # D7 in C major
-            4: 'V/vi',   # E7 in C major
-            7: 'V/ii',   # A7 in C major
-            9: 'V/iii',  # B7 in C major
-            11: 'V/IV'   # C7 in C major (rare)
-        }
+        self.last_analysis_ambiguity: List[str] = []
     
     async def analyze_functionally(
         self,
@@ -80,11 +118,11 @@ class FunctionalHarmonyAnalyzer:
         parent_key: Optional[str] = None
     ) -> FunctionalAnalysisResult:
         """
-        Analyze chord progression using functional harmony principles.
+        Analyze chord progression with functional harmony as primary framework.
         
         Args:
             chord_symbols: List of chord symbols to analyze
-            parent_key: Optional key center hint
+            parent_key: Optional parent key signature (e.g., "C major")
             
         Returns:
             Complete functional analysis result
@@ -92,79 +130,181 @@ class FunctionalHarmonyAnalyzer:
         if not chord_symbols:
             raise ValueError("Empty chord progression")
         
-        # Parse chords
-        chord_matches = find_chord_matches(chord_symbols)
+        # Step 1: Determine key center (use parent key if provided)
+        key_analysis = self._determine_key_center(chord_symbols, parent_key)
         
-        # Determine key center
-        key_center, mode = self._determine_key_center(chord_matches, parent_key)
+        # Step 2: Analyze each chord functionally
+        functional_chords = self._analyze_chords_in_key(chord_symbols, key_analysis)
         
-        # Analyze each chord
-        analyzed_chords = []
-        for chord_match in chord_matches:
-            analysis = self._analyze_chord(chord_match, key_center, mode)
-            analyzed_chords.append(analysis)
+        # Step 3: Identify cadences and progressions
+        cadences = self._identify_cadences(functional_chords)
+        progression_type = self._classify_progression(functional_chords, cadences)
         
-        # Detect cadences
-        cadences = self._detect_cadences(analyzed_chords)
+        # Step 4: Detect chromatic elements
+        chromatic_elements = self._detect_chromatic_elements(functional_chords, key_analysis)
         
-        # Identify chromatic elements
-        chromatic_elements = self._identify_chromatic_elements(analyzed_chords, key_center, mode)
-        
-        # Determine progression type
-        progression_type = self._determine_progression_type(analyzed_chords, cadences)
-        
-        # Calculate confidence
-        confidence = self._calculate_confidence(analyzed_chords, cadences)
-        
-        # Generate explanation
-        explanation = self._generate_explanation(analyzed_chords, key_center, mode)
-        
-        # Format key signature
-        key_signature = f"{key_center} {mode}"
+        # Step 5: Calculate confidence and create explanation
+        confidence = self._calculate_confidence(functional_chords, cadences, chromatic_elements)
+        explanation = self._create_explanation(functional_chords, progression_type, chromatic_elements)
         
         return FunctionalAnalysisResult(
-            key_center=key_center,
-            key_signature=key_signature,
-            mode=mode,
-            chords=analyzed_chords,
+            key_center=key_analysis['key_center'],
+            key_signature=key_analysis['key_signature'],
+            mode=key_analysis['mode'],
+            chords=functional_chords,
             cadences=cadences,
             progression_type=progression_type,
             confidence=confidence,
             explanation=explanation,
-            chromatic_elements=chromatic_elements
+            chromatic_elements=chromatic_elements,
+            ambiguity_factors=self.last_analysis_ambiguity if self.last_analysis_ambiguity else None
         )
     
     def _determine_key_center(
         self,
-        chord_matches: List[ChordMatch],
+        chord_symbols: List[str],
         parent_key: Optional[str]
-    ) -> tuple[str, str]:
-        """Determine the key center and mode from chord progression."""
+    ) -> Dict[str, Any]:
+        """
+        Determine the key center using multiple methods.
+        
+        Returns:
+            Dictionary with key_center, key_signature, mode, root_pitch, is_minor
+        """
         if parent_key:
-            # Parse parent key if provided
-            parts = parent_key.split()
-            if len(parts) >= 2:
-                key_center = parts[0]
-                mode = "minor" if "minor" in parts[1].lower() else "major"
-                return key_center, mode
+            # Use provided parent key
+            parsed = self._parse_key(parent_key)
+            if parsed:
+                return {
+                    'key_center': f"{parsed['tonic']} {'Minor' if parsed['is_minor'] else 'Major'}",
+                    'key_signature': self._get_key_signature(parsed['tonic'], parsed['is_minor']),
+                    'mode': 'minor' if parsed['is_minor'] else 'major',
+                    'root_pitch': NOTE_TO_PITCH_CLASS.get(parsed['tonic'], 0),
+                    'is_minor': parsed['is_minor']
+                }
         
-        # Simple key detection based on first and last chords
-        if chord_matches:
-            first_chord = chord_matches[0]
-            last_chord = chord_matches[-1]
-            
-            # If first and last chords are the same, likely tonic
-            if first_chord.root == last_chord.root:
-                key_center = first_chord.root
-                mode = "minor" if first_chord.quality == "minor" else "major"
-                return key_center, mode
+        # Analyze first and last chords for tonal center
+        first_chord = self._parse_chord_symbol(chord_symbols[0])
+        last_chord = self._parse_chord_symbol(chord_symbols[-1])
         
-        # Default fallback
-        return "C", "major"
+        # Assume first/last chord suggests key (simple heuristic for now)
+        suggested_root = first_chord['root'] if first_chord else 0
+        is_minor = first_chord and ('m' in first_chord['chord_name'] and 'M' not in first_chord['chord_name'])
+        root_name = next((name for name, pitch in NOTE_TO_PITCH_CLASS.items() 
+                         if pitch == suggested_root), 'C')
+        
+        return {
+            'key_center': f"{root_name} {'Minor' if is_minor else 'Major'}",
+            'key_signature': self._get_key_signature(root_name, is_minor),
+            'mode': 'minor' if is_minor else 'major',
+            'root_pitch': suggested_root,
+            'is_minor': is_minor
+        }
     
-    def _analyze_chord(
+    def _parse_key(self, key_str: str) -> Optional[Dict[str, Any]]:
+        """Parse key string like 'C major' or 'A minor'."""
+        parts = key_str.split()
+        if len(parts) >= 2:
+            tonic = parts[0]
+            mode = parts[1].lower()
+            if tonic in NOTE_TO_PITCH_CLASS:
+                return {
+                    'tonic': tonic,
+                    'is_minor': 'minor' in mode or 'm' in mode.lower()
+                }
+        return None
+    
+    def _get_key_signature(self, tonic: str, is_minor: bool) -> str:
+        """Get key signature for display."""
+        return f"{tonic} {'minor' if is_minor else 'major'}"
+    
+    def _parse_chord_symbol(self, symbol: str) -> Optional[Dict[str, Any]]:
+        """Parse chord symbol into components."""
+        try:
+            from .chord_logic import ChordParser
+            parser = ChordParser()
+            chord_match = parser.parse_chord(symbol)
+            return {
+                'root': chord_match.root_pitch,
+                'chord_name': symbol,
+                'bass_note': chord_match.bass_pitch
+            }
+        except:
+            # Fallback parsing
+            if symbol and symbol[0] in NOTE_TO_PITCH_CLASS:
+                return {
+                    'root': NOTE_TO_PITCH_CLASS[symbol[0]],
+                    'chord_name': symbol,
+                    'bass_note': None
+                }
+            return None
+    
+    def _analyze_chords_in_key(
         self,
-        chord_match: ChordMatch,
+        chord_symbols: List[str],
+        key_analysis: Dict[str, Any]
+    ) -> List[FunctionalChordAnalysis]:
+        """
+        Analyze each chord within the established key with figured bass notation.
+        """
+        analyzed_chords = []
+        
+        for symbol in chord_symbols:
+            chord_info = self._parse_chord_symbol(symbol)
+            if not chord_info:
+                analyzed_chords.append(self._create_empty_chord_analysis(symbol))
+                continue
+            
+            # Calculate interval from key center
+            interval_from_key = (chord_info['root'] - key_analysis['root_pitch'] + 12) % 12
+            
+            # Determine if chord is diatonic or chromatic
+            is_diatonic = self._is_chord_diatonic(
+                interval_from_key, 
+                key_analysis['is_minor'], 
+                chord_info['chord_name']
+            )
+            
+            # Get Roman numeral and function
+            roman_numeral = self._get_roman_numeral(
+                interval_from_key,
+                key_analysis['is_minor'],
+                chord_info['chord_name'],
+                not is_diatonic
+            )
+            
+            chord_function = self._get_chord_function(
+                interval_from_key,
+                key_analysis['is_minor'],
+                not is_diatonic
+            )
+            
+            # Analyze inversion and figured bass
+            inversion_analysis = self._analyze_inversion_and_figured_bass(chord_info, roman_numeral)
+            
+            # Determine chromatic type if applicable
+            chromatic_type = None
+            if not is_diatonic:
+                chromatic_type = self._determine_chromatic_type(
+                    interval_from_key,
+                    key_analysis['is_minor'],
+                    chord_info['chord_name']
+                )
+            
+            analyzed_chords.append(FunctionalChordAnalysis(
+                chord_symbol=symbol,
+                root=chord_info['root'],
+                chord_name=chord_info['chord_name'],
+                roman_numeral=roman_numeral + inversion_analysis['figured_bass'],
+                figured_bass=inversion_analysis['figured_bass'],
+                inversion=inversion_analysis['inversion'],
+                function=chord_function,
+                is_chromatic=not is_diatonic,
+                chromatic_type=chromatic_type,
+                bass_note=chord_info['bass_note']
+            ))
+        
+        return analyzed_chords
         key_center: str,
         mode: str
     ) -> FunctionalChordAnalysis:
