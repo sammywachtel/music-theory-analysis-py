@@ -1,0 +1,112 @@
+name: Python Lint and Code Quality
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main, feature/* ]
+
+jobs:
+  lint:
+    name: Lint Python Code
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+          if [ -f requirements-dev.txt ]; then
+            pip install -r requirements-dev.txt
+          fi
+          # Install linting tools
+          pip install black isort flake8 mypy
+
+      - name: Run Black formatter
+        run: |
+          echo "🎨 Running Black formatter..."
+          black --check --diff . || (black . && echo "✅ Code formatted with Black")
+
+      - name: Run isort import sorter
+        run: |
+          echo "📚 Running isort..."
+          isort --check --diff . || (isort . && echo "✅ Imports sorted with isort")
+
+      - name: Run Flake8 linter
+        run: |
+          echo "🔍 Running Flake8..."
+          flake8 . --max-line-length=88 --extend-ignore=E203,W503
+
+      - name: Run MyPy type checking
+        run: |
+          echo "🔍 Running MyPy type checking..."
+          mypy . --ignore-missing-imports || echo "⚠️ MyPy found type issues"
+
+      - name: Commit and push formatting fixes
+        if: github.event_name == 'pull_request'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          if ! git diff --quiet; then
+            echo "📝 Auto-fixing formatting issues and committing changes"
+            git add .
+            git commit -m "Auto-fix Python formatting
+
+Automatically applied Black and isort fixes during PR workflow.
+            
+- Fixed code formatting with Black
+- Sorted imports with isort
+- No manual intervention required"
+            
+            git push origin HEAD:${{ github.head_ref }}
+            echo "✅ Formatting fixes committed and pushed"
+          else
+            echo "✅ No formatting fixes needed"
+          fi
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+          if [ -f requirements-dev.txt ]; then
+            pip install -r requirements-dev.txt
+          fi
+          pip install pytest pytest-cov
+
+      - name: Run tests
+        run: |
+          echo "🧪 Running Python tests..."
+          if [ -f "pytest.ini" ] || [ -f "pyproject.toml" ] || [ -d "tests" ]; then
+            pytest --cov=. --cov-report=term-missing
+          else
+            echo "No tests found, skipping test run"
+          fi

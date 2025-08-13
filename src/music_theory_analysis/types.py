@@ -76,10 +76,10 @@ class Interpretation:
     analysis: str
     roman_numerals: List[str]
     key_signature: str
-    mode: Optional[str] = None
     evidence: List[Evidence]
     reasoning: str
     theoretical_basis: str
+    mode: Optional[str] = None
 
 
 @dataclass

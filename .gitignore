@@ -89,4 +89,6 @@ docs/_build/
 docs/build/
 
 # Pre-commit
-.pre-commit-cache/
+.pre-commit-cache/*.log
+node_modules/
+.env.local
