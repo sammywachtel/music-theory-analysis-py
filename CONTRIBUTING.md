@@ -138,7 +138,7 @@ from .types import ChordFunction
 @dataclass
 class FunctionalChordAnalysis:
     """Analysis result for a single chord in functional harmony context.
-    
+
     Args:
         chord_symbol: The chord symbol (e.g., "Cm7")
         roman_numeral: Roman numeral analysis (e.g., "ii7")
@@ -149,10 +149,10 @@ class FunctionalChordAnalysis:
     roman_numeral: str
     function: ChordFunction
     confidence: float
-    
+
     def is_high_confidence(self) -> bool:
         """Check if analysis confidence is above threshold.
-        
+
         Returns:
             True if confidence >= 0.7, False otherwise
         """
@@ -165,21 +165,21 @@ def analyze_chord_function(
     mode: str = "major"
 ) -> FunctionalChordAnalysis:
     """Analyze the harmonic function of a chord in context.
-    
+
     Args:
         chord_symbol: Chord to analyze (e.g., "Dm7")
         key_center: Tonal center (e.g., "C")
         mode: Mode context ("major" or "minor")
-        
+
     Returns:
         Functional analysis result with Roman numeral and function
-        
+
     Raises:
         ValueError: If chord_symbol or key_center is invalid
     """
     if not chord_symbol.strip():
         raise ValueError("Chord symbol cannot be empty")
-        
+
     # Implementation details...
     return FunctionalChordAnalysis(
         chord_symbol=chord_symbol,
@@ -242,12 +242,12 @@ import pytest
 from music_theory_analysis import ComprehensiveAnalysisEngine
 
 class TestFunctionalAnalysis:
-    
+
     @pytest.fixture
     def analyzer(self):
         """Fixture providing a configured analysis engine."""
         return ComprehensiveAnalysisEngine()
-    
+
     @pytest.mark.parametrize("progression,expected_key", [
         ("C F G C", "C major"),
         ("Am Dm G Am", "A minor"),
@@ -258,7 +258,7 @@ class TestFunctionalAnalysis:
         result = analyzer.analyze_comprehensively(progression)
         assert result.functional.key_center == expected_key
         assert result.confidence > 0.7
-    
+
     def test_invalid_progression_raises_error(self, analyzer):
         """Test that invalid input raises appropriate error."""
         with pytest.raises(ValueError, match="empty progression"):
@@ -298,7 +298,7 @@ When adding new features, consider adding:
 3. **Ensure all tests pass** and quality checks pass
 4. **Write a clear PR description** explaining:
    - What changes were made
-   - Why they were made  
+   - Why they were made
    - Any breaking changes
    - How to test the changes
 

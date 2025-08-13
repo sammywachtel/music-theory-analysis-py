@@ -3,12 +3,13 @@ Type definitions and data structures for music theory analysis.
 """
 
 from dataclasses import dataclass
-from typing import List, Optional, Literal, Dict, Any
 from enum import Enum
+from typing import Any, Dict, List, Literal, Optional
 
 
 class ChordFunction(Enum):
     """Harmonic function classification for chords."""
+
     TONIC = "tonic"
     PREDOMINANT = "predominant"
     DOMINANT = "dominant"
@@ -19,6 +20,7 @@ class ChordFunction(Enum):
 
 class ChromaticType(Enum):
     """Types of chromatic harmonic elements."""
+
     SECONDARY_DOMINANT = "secondary_dominant"
     BORROWED_CHORD = "borrowed_chord"
     CHROMATIC_MEDIANT = "chromatic_mediant"
@@ -28,6 +30,7 @@ class ChromaticType(Enum):
 
 class ProgressionType(Enum):
     """Types of chord progressions."""
+
     AUTHENTIC_CADENCE = "authentic_cadence"
     PLAGAL_CADENCE = "plagal_cadence"
     DECEPTIVE_CADENCE = "deceptive_cadence"
@@ -43,6 +46,7 @@ class ProgressionType(Enum):
 @dataclass
 class UserInputContext:
     """Context information about user input."""
+
     chord_progression: str
     parent_key: Optional[str] = None
     analysis_type: str = "chord_progression"
@@ -51,6 +55,7 @@ class UserInputContext:
 @dataclass
 class AnalysisOptions:
     """Options for configuring analysis behavior."""
+
     parent_key: Optional[str] = None
     pedagogical_level: Literal["beginner", "intermediate", "advanced"] = "intermediate"
     confidence_threshold: float = 0.5
@@ -61,6 +66,7 @@ class AnalysisOptions:
 @dataclass
 class Evidence:
     """Evidence supporting an analytical interpretation."""
+
     type: Literal["structural", "cadential", "intervallic", "contextual"]
     strength: float  # 0.0 to 1.0
     description: str
@@ -71,20 +77,22 @@ class Evidence:
 @dataclass
 class Interpretation:
     """A single analytical interpretation."""
+
     type: Literal["functional", "modal", "chromatic"]
     confidence: float
     analysis: str
     roman_numerals: List[str]
     key_signature: str
-    mode: Optional[str] = None
     evidence: List[Evidence]
     reasoning: str
     theoretical_basis: str
+    mode: Optional[str] = None
 
 
 @dataclass
 class MultipleInterpretationResult:
     """Result containing multiple analytical interpretations."""
+
     primary_analysis: Interpretation
     alternative_analyses: List[Interpretation]
     metadata: Dict[str, Any]
