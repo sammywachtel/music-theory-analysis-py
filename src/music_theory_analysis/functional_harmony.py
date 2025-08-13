@@ -903,21 +903,6 @@ class FunctionalHarmonyAnalyzer:
 
         return explanation
 
-        # Generate figured bass
-        figured_bass = self._generate_figured_bass(chord_match)
-
-        return FunctionalChordAnalysis(
-            chord_symbol=chord_match.chord_symbol,
-            root=chord_match.root_pitch,
-            chord_name=f"{chord_match.root} {chord_match.quality}",
-            roman_numeral=roman_numeral,
-            figured_bass=figured_bass,
-            inversion=chord_match.inversion,
-            function=function,
-            is_chromatic=is_chromatic,
-            bass_note=chord_match.bass_pitch,
-        )
-
     def _calculate_roman_numeral(
         self, chord_match: ChordMatch, key_center: str, mode: str
     ) -> str:
