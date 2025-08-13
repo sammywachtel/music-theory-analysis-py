@@ -1,4 +1,4 @@
-name: Python Lint and Code Quality
+name: Comprehensive Python CI/CD
 
 on:
   pull_request:
@@ -102,11 +102,33 @@ Automatically applied Black and isort fixes during PR workflow.
           fi
           pip install pytest pytest-cov
 
-      - name: Run tests
+      - name: Install package in development mode
         run: |
-          echo "🧪 Running Python tests..."
-          if [ -f "pytest.ini" ] || [ -f "pyproject.toml" ] || [ -d "tests" ]; then
-            pytest --cov=. --cov-report=term-missing
-          else
-            echo "No tests found, skipping test run"
-          fi
+          echo "📦 Installing package in development mode..."
+          pip install -e .
+
+      - name: Run core unit tests
+        run: |
+          echo "🧪 Running core unit tests..."
+          pytest tests/ -v --cov=src/music_theory_analysis --cov-report=term-missing --cov-report=xml
+
+      - name: Generate comprehensive test data
+        run: |
+          echo "🎯 Generating comprehensive test data..."
+          python scripts/generate_test_data.py
+          echo "✅ Generated test data files:"
+          ls -la tests/generated/
+
+      - name: Validate behavioral parity
+        run: |
+          echo "🎼 Validating behavioral parity with comprehensive test suite..."
+          python scripts/validate_with_generated_data.py
+
+      - name: Upload coverage reports
+        if: github.event_name == 'pull_request'
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
