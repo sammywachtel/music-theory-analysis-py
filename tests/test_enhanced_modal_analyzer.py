@@ -9,6 +9,7 @@ Tests the sophisticated modal detection capabilities including:
 """
 
 import pytest
+
 from harmonic_analysis import (
     EnhancedModalAnalyzer,
     EvidenceType,

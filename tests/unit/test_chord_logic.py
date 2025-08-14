@@ -3,6 +3,7 @@ Unit tests for chord parsing and logic.
 """
 
 import pytest
+
 from harmonic_analysis.chord_logic import (
     ChordMatch,
     ChordParser,

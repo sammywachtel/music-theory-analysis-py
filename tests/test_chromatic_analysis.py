@@ -9,6 +9,7 @@ Tests the chromatic harmony analysis capabilities including:
 """
 
 import pytest
+
 from harmonic_analysis import (
     BorrowedChord,
     ChromaticAnalysisResult,

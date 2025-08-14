@@ -10,6 +10,7 @@ Tests comprehensive chord parsing and detection including:
 """
 
 import pytest
+
 from harmonic_analysis import (
     ChordMatch,
     ChordParser,
