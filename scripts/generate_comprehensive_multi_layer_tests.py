@@ -1,18 +1,41 @@
 #!/usr/bin/env python3
 """
-🚀 COMPREHENSIVE MULTI-LAYER TEST GENERATOR REVOLUTION!
+Comprehensive Multi-Layer Test Generator
 
-Generates 1000+ test cases with FULL multi-layer analysis expectations:
-- Functional harmony (confidence + Roman numerals + cadences)
-- Modal analysis (confidence + mode detection + evidence)
-- Chromatic analysis (confidence + secondary dominants + borrowed chords)
-- UI expectations (primary interpretation + alternatives + thresholds)
+Generates comprehensive test cases with multi-layer analysis expectations for the
+harmonic analysis library. This script creates test cases that validate functional
+harmony, modal analysis, and chromatic analysis simultaneously.
 
-NO MORE CONTRADICTIONS! Every test case has realistic expectations
-for ALL analysis layers with proper confidence scoring.
+Key Features:
+- Generates 427+ test cases across multiple categories
+- Creates realistic expectations for all analysis types  
+- Includes proper Roman numeral generation (FIXED as of Aug 2025)
+- Supports confidence scoring expectations
+- Exports to JSON and CSV formats for comprehensive validation
 
-This is a direct port of the frontend's comprehensive test generator
-to ensure behavioral parity across TypeScript and Python implementations.
+Categories:
+- modal_characteristic: 168 tests - Clear modal progressions
+- modal_contextless: 168 tests - Modal progressions without parent key  
+- functional_clear: 60 tests - Unambiguous functional harmony
+- chromatic_*: 7 tests - Secondary dominants and borrowed chords
+- ambiguous: 9 tests - Theoretically unclear progressions
+- edge_*: 10 tests - Edge cases (single chords, repetition, etc.)
+- jazz_complex: 3 tests - Complex jazz harmony
+
+Usage:
+    python scripts/generate_comprehensive_multi_layer_tests.py
+
+Output:
+    tests/generated/comprehensive-multi-layer-tests.json
+    tests/generated/comprehensive-multi-layer-tests.csv
+
+Historical Note:
+Originally had a critical bug in chord_to_roman_numeral() that returned "I" 
+for all major chords, causing widespread test failures. Fixed Aug 2025 to 
+properly calculate Roman numerals based on chord root and key center.
+
+Author: Music Theory Analysis Team
+Date: August 2025  
 """
 
 import csv
@@ -1082,12 +1105,72 @@ class ComprehensiveMultiLayerGenerator:
         return [self.chord_to_roman_numeral(chord, key_center) for chord in chords]
 
     def chord_to_roman_numeral(self, chord: str, key_center: Optional[str]) -> str:
-        """Convert chord to Roman numeral (simplified)"""
+        """
+        Convert chord to Roman numeral based on actual chord root and key center.
+        
+        This is the fixed implementation that properly analyzes chord roots
+        instead of the broken original that returned "I" for all major chords.
+        """
+        if not key_center:
+            return "?"
+            
+        # Parse chord root (handle enharmonics)
+        chord_root = chord[0]
+        if len(chord) > 1 and chord[1] in ['#', 'b']:
+            chord_root = chord[:2]
+        
+        # Parse key center root  
+        key_root = key_center.split()[0]
+        if len(key_root) > 1 and key_root[1] in ['#', 'b']:
+            key_root = key_root[:2]
+        
+        # Convert to pitch classes for interval calculation
+        NOTE_TO_PITCH = {
+            'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3, 'E': 4,
+            'F': 5, 'F#': 6, 'Gb': 6, 'G': 7, 'G#': 8, 'Ab': 8, 'A': 9,
+            'A#': 10, 'Bb': 10, 'B': 11
+        }
+        
+        chord_pitch = NOTE_TO_PITCH.get(chord_root, 0)
+        key_pitch = NOTE_TO_PITCH.get(key_root, 0)
+        
+        # Calculate scale degree (0-11)
+        scale_degree = (chord_pitch - key_pitch) % 12
+        
+        # Determine if key is minor
+        is_minor = "minor" in key_center.lower()
+        
+        # Generate Roman numeral based on scale degree and chord quality
+        if is_minor:
+            degree_map = {
+                0: "i", 2: "ii°", 3: "bIII", 5: "iv", 7: "v", 8: "bVI", 10: "bVII"
+            }
+            base_numeral = degree_map.get(scale_degree, "?")
+            
+            # Handle major chords in minor keys (borrowed from parallel major)
+            if "m" not in chord and base_numeral in ["i", "iv", "v"]:
+                base_numeral = base_numeral.upper()
+                
+        else:
+            degree_map = {
+                0: "I", 2: "ii", 4: "iii", 5: "IV", 7: "V", 9: "vi", 11: "vii°"
+            }
+            base_numeral = degree_map.get(scale_degree, "?")
+            
+            # Handle minor chords in major keys  
+            if "m" in chord and base_numeral in ["I", "IV", "V"]:
+                base_numeral = base_numeral.lower()
+        
+        # Add chord extensions
         if "7" in chord and "maj7" not in chord:
-            return "V7"
-        if "m" in chord:
-            return "ii" if "dim" in chord else "ii"
-        return "I"
+            if base_numeral == "V":
+                return "V7"  # Dominant 7th
+            else:
+                return base_numeral + "7"
+        elif "dim" in chord or "°" in chord:
+            return base_numeral + "°" if "°" not in base_numeral else base_numeral
+        
+        return base_numeral
 
     def analyze_chord_functions(
         self, chords: List[str], key_center: Optional[str]

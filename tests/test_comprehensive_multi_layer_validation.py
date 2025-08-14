@@ -256,10 +256,10 @@ class TestComprehensiveMultiLayerValidation:
         print("\n📊 OVERALL SYSTEM PERFORMANCE RESULTS:")
         print(f"🎯 Total Tests: {overall_passed + overall_failed}")
         print(
-            f"✅ Passed: {overall_passed} ({overall_passed/(overall_passed+overall_failed)*100:.1f}%)"
+            f"✅ Passed: {overall_passed} ({overall_passed / (overall_passed + overall_failed) * 100:.1f}%)"
         )
         print(
-            f"❌ Failed: {overall_failed} ({overall_failed/(overall_passed+overall_failed)*100:.1f}%)"
+            f"❌ Failed: {overall_failed} ({overall_failed / (overall_passed + overall_failed) * 100:.1f}%)"
         )
 
         print("\n📋 By Category:")
