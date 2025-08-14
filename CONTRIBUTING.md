@@ -42,8 +42,8 @@ We welcome contributions in the following areas:
 
 2. **Clone your fork** locally:
    ```bash
-   git clone https://github.com/yourusername/music-theory-analysis-py.git
-   cd music-theory-analysis-py
+   git clone https://github.com/yourusername/harmonic-analysis-py.git
+   cd harmonic-analysis-py
    ```
 
 3. **Set up the development environment**:
@@ -239,7 +239,7 @@ def test_comprehensive_analysis():
 
 ```python
 import pytest
-from music_theory_analysis import ComprehensiveAnalysisEngine
+from harmonic_analysis import ComprehensiveAnalysisEngine
 
 class TestFunctionalAnalysis:
 

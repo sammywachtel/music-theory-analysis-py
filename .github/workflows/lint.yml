@@ -110,7 +110,7 @@ jobs:
       - name: Run core unit tests
         run: |
           echo "🧪 Running core unit tests..."
-          pytest tests/ -v --cov=src/music_theory_analysis --cov-report=term-missing --cov-report=xml
+          pytest tests/ -v --cov=src/harmonic_analysis --cov-report=term-missing --cov-report=xml
 
       - name: Generate comprehensive test data
         run: |

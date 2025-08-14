@@ -14,13 +14,13 @@ A comprehensive Python library for music theory analysis, providing sophisticate
 ## Installation
 
 ```bash
-pip install music-theory-analysis
+pip install harmonic-analysis
 ```
 
 ## Quick Start
 
 ```python
-from music_theory_analysis import ComprehensiveAnalysisEngine
+from harmonic_analysis import ComprehensiveAnalysisEngine
 
 # Initialize the analysis engine
 analyzer = ComprehensiveAnalysisEngine()
@@ -144,7 +144,7 @@ pytest -m "functional"
 pytest -m "chromatic"
 
 # Run with coverage
-pytest --cov=music_theory_analysis --cov-report=html
+pytest --cov=harmonic_analysis --cov-report=html
 ```
 
 ## Development
@@ -152,8 +152,8 @@ pytest --cov=music_theory_analysis --cov-report=html
 ### Setting up for development
 
 ```bash
-git clone https://github.com/sammywachtel/music-theory-analysis-py.git
-cd music-theory-analysis-py
+git clone https://github.com/sammywachtel/harmonic-analysis-py.git
+cd harmonic-analysis-py
 pip install -e ".[dev]"
 pre-commit install
 ```
@@ -187,11 +187,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 If you use this library in academic work, please cite:
 
 ```bibtex
-@software{music_theory_analysis,
+@software{harmonic_analysis,
   title = {Music Theory Analysis: A Comprehensive Python Library},
   author = {Wachtel, Sam},
   year = {2025},
-  url = {https://github.com/sammywachtel/music-theory-analysis-py}
+  url = {https://github.com/sammywachtel/harmonic-analysis-py}
 }
 ```
 

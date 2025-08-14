@@ -9,8 +9,7 @@ Tests the chromatic harmony analysis capabilities including:
 """
 
 import pytest
-
-from music_theory_analysis import (
+from harmonic_analysis import (
     BorrowedChord,
     ChromaticAnalysisResult,
     ChromaticAnalyzer,
@@ -120,11 +119,13 @@ class TestChromaticAnalysis:
         if chromatic_result is not None:
             # If chromatic elements are found, they should be minimal for this simple progression
             total_elements = (
-                len(chromatic_result.secondary_dominants) + 
-                len(chromatic_result.borrowed_chords) + 
-                len(chromatic_result.chromatic_mediants)
+                len(chromatic_result.secondary_dominants)
+                + len(chromatic_result.borrowed_chords)
+                + len(chromatic_result.chromatic_mediants)
             )
-            assert total_elements <= 5  # Allow for some interpretation flexibility in chromatic detection
+            assert (
+                total_elements <= 5
+            )  # Allow for some interpretation flexibility in chromatic detection
 
     @pytest.mark.asyncio
     async def test_chromatic_complexity_scoring(self):

@@ -9,8 +9,7 @@ and UI behavior expectations to ensure behavioral parity.
 """
 
 import pytest
-
-from music_theory_analysis import (
+from harmonic_analysis import (
     AnalysisOptions,
     ChromaticAnalyzer,
     EnhancedModalAnalyzer,
@@ -18,6 +17,7 @@ from music_theory_analysis import (
     MultipleInterpretationService,
     analyze_progression_multiple,
 )
+
 from scripts.generate_comprehensive_multi_layer_tests import (
     ComprehensiveMultiLayerGenerator,
     MultiLayerTestCase,

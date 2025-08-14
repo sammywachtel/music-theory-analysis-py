@@ -33,8 +33,8 @@ The library is designed to be consumed by:
 
 #### Basic Chord Progression Analysis
 ```python
-from music_theory_analysis import analyze_progression_multiple
-from music_theory_analysis.types import AnalysisOptions
+from harmonic_analysis import analyze_progression_multiple
+from harmonic_analysis.types import AnalysisOptions
 
 # Simple analysis
 result = await analyze_progression_multiple(['C', 'F', 'G', 'C'])
@@ -115,7 +115,7 @@ Input: ['Am', 'F', 'C', 'G']
     ↓
 1. Parallel Analysis
    ├── Functional Harmony Analyzer
-   ├── Enhanced Modal Analyzer  
+   ├── Enhanced Modal Analyzer
    └── Chromatic Analysis
     ↓
 2. Evidence Collection
@@ -144,19 +144,19 @@ class MultipleInterpretationService:
     def __init__(self):
         self.functional_analyzer = FunctionalHarmonyAnalyzer()
         self.modal_analyzer = EnhancedModalAnalyzer()
-        
+
     async def analyze_progression(self, chords):
         # Run analyzers in parallel
         functional_result, modal_result = await asyncio.gather(
             self._run_functional_analysis(chords),
             self._run_modal_analysis(chords)
         )
-        
+
         # Create interpretations with evidence
         interpretations = await self._calculate_interpretations(
             chords, functional_result, modal_result
         )
-        
+
         # Rank by confidence and filter
         return self._create_final_result(interpretations)
 ```
@@ -185,7 +185,7 @@ class AnalysisEvidence:
 The confidence scoring reflects **analytical certainty** rather than musical quality:
 
 - **0.85-1.0 (Definitive)**: Unambiguous harmonic markers present
-- **0.65-0.84 (Strong)**: Clear evidence with minimal ambiguity  
+- **0.65-0.84 (Strong)**: Clear evidence with minimal ambiguity
 - **0.45-0.64 (Moderate)**: Valid interpretation with competing possibilities
 - **0.25-0.44 (Weak)**: Theoretically possible but lacks context
 - **0.0-0.24 (Insufficient)**: Requires significant assumptions
@@ -278,7 +278,7 @@ The library is designed for seamless FastAPI integration:
 
 ```python
 from fastapi import FastAPI
-from music_theory_analysis import analyze_progression_multiple
+from harmonic_analysis import analyze_progression_multiple
 
 app = FastAPI()
 
@@ -394,6 +394,21 @@ flake8 src/ tests/ scripts/
 mypy src/ --ignore-missing-imports
 ```
 
+### Maintenance Scripts
+```bash
+# Confidence calibration analysis (essential for debugging)
+python scripts/confidence_calibration_analysis.py
+
+# Regenerate comprehensive test data (when needed)
+python scripts/generate_comprehensive_multi_layer_tests.py
+```
+
+**Key Maintenance Tools:**
+- **`scripts/confidence_calibration_analysis.py`**: Essential for confidence calibration and debugging. Used to identify the critical parent key parsing bug that improved functional harmony from 0% to 72% success rate.
+- **`scripts/generate_comprehensive_multi_layer_tests.py`**: Generates 427+ comprehensive test cases with multi-layer expectations. Direct port of frontend TypeScript test generator for behavioral parity.
+
+See `scripts/README.md` for detailed documentation of maintenance scripts.
+
 ## Test Suite Architecture
 
 ### Comprehensive Multi-Layer Tests (427 cases)
@@ -486,7 +501,7 @@ def _calculate_confidence(self, evidence: List[AnalysisEvidence]) -> float:
 ```python
 EVIDENCE_WEIGHTS = {
     EvidenceType.CADENTIAL: 0.4,     # bVII-I, V-I, bII-I patterns
-    EvidenceType.STRUCTURAL: 0.25,   # First/last chord relationships  
+    EvidenceType.STRUCTURAL: 0.25,   # First/last chord relationships
     EvidenceType.INTERVALLIC: 0.2,   # Distinctive scale degrees
     EvidenceType.HARMONIC: 0.15,     # Key signature, chord qualities
     EvidenceType.CONTEXTUAL: 0.15,   # Overall context
@@ -521,26 +536,26 @@ if functional_result.confidence >= 0.5:
 # Create analysis script to compare patterns
 cat > scripts/confidence_calibration_analysis.py << 'EOF'
 import json
-from src.music_theory_analysis.multiple_interpretation_service import analyze_progression_multiple
-from src.music_theory_analysis.types import AnalysisOptions
+from src.harmonic_analysis.multiple_interpretation_service import analyze_progression_multiple
+from src.harmonic_analysis.types import AnalysisOptions
 import asyncio
 
 async def analyze_test_cases():
     with open('tests/generated/comprehensive-multi-layer-tests.json', 'r') as f:
         test_cases = json.load(f)
-    
+
     functional_cases = [tc for tc in test_cases if tc['category'] == 'functional_clear'][:10]
-    
+
     print("CONFIDENCE ANALYSIS:")
     print("=" * 50)
-    
+
     for case in functional_cases:
         chords = case['chords']
         expected_conf = case['expected_functional']['confidence']
-        
+
         result = await analyze_progression_multiple(chords)
         actual_conf = result.primary_analysis.confidence
-        
+
         print(f"Chords: {chords}")
         print(f"Expected: {expected_conf:.3f}")
         print(f"Actual:   {actual_conf:.3f}")
@@ -575,14 +590,14 @@ functional_medium_confidence = 0.60  # Was 0.75
 # In multiple_interpretation_service.py, add clear progression boost
 def _create_functional_interpretation(self, chords, functional_result, options):
     # ... existing code ...
-    
+
     # Boost confidence for classic progressions
     classic_patterns = [
         ['C', 'F', 'G', 'C'],      # I-IV-V-I
         ['C', 'Am', 'F', 'G'],     # I-vi-IV-V
         ['Am', 'F', 'C', 'G'],     # vi-IV-I-V
     ]
-    
+
     if chords in classic_patterns:
         confidence = min(0.95, confidence + 0.2)  # Boost classic progressions
 ```
@@ -618,13 +633,13 @@ python -m pytest tests/test_comprehensive_multi_layer_validation.py::TestCompreh
 # Verify specific test cases work
 python -c "
 import asyncio
-from src.music_theory_analysis.multiple_interpretation_service import analyze_progression_multiple
+from src.harmonic_analysis.multiple_interpretation_service import analyze_progression_multiple
 
 async def test():
     result = await analyze_progression_multiple(['C', 'F', 'G', 'C'])
     print(f'C-F-G-C: {result.primary_analysis.confidence:.3f} confidence')
-    
-    result = await analyze_progression_multiple(['G', 'F', 'G'])  
+
+    result = await analyze_progression_multiple(['G', 'F', 'G'])
     print(f'G-F-G: {result.primary_analysis.confidence:.3f} confidence')
 
 asyncio.run(test())
@@ -648,7 +663,7 @@ asyncio.run(test())
    ```bash
    # Debug functional harmony detection
    python -c "
-   from src.music_theory_analysis.functional_harmony import FunctionalHarmonyAnalyzer
+   from src.harmonic_analysis.functional_harmony import FunctionalHarmonyAnalyzer
    analyzer = FunctionalHarmonyAnalyzer()
    result = analyzer.analyze_functionally(['C', 'F', 'G', 'C'])
    print(f'Confidence: {result.confidence}, Roman: {[c.roman_numeral for c in result.chords]}')
@@ -693,10 +708,10 @@ asyncio.run(test())
 ## Key Files for Maintenance
 
 ### Core Analysis
-- `src/music_theory_analysis/enhanced_modal_analyzer.py` - Modal analysis engine
-- `src/music_theory_analysis/functional_harmony.py` - Functional harmony engine
-- `src/music_theory_analysis/multiple_interpretation_service.py` - Main orchestrator
-- `src/music_theory_analysis/comprehensive_analysis.py` - Unified analysis entry point
+- `src/harmonic_analysis/enhanced_modal_analyzer.py` - Modal analysis engine
+- `src/harmonic_analysis/functional_harmony.py` - Functional harmony engine
+- `src/harmonic_analysis/multiple_interpretation_service.py` - Main orchestrator
+- `src/harmonic_analysis/comprehensive_analysis.py` - Unified analysis entry point
 
 ### Testing Infrastructure
 - `tests/test_comprehensive_multi_layer_validation.py` - Main validation suite
@@ -739,7 +754,7 @@ asyncio.run(test())
 **Debugging Steps**:
 ```python
 # Check modal evidence collection
-from src.music_theory_analysis.enhanced_modal_analyzer import EnhancedModalAnalyzer
+from src.harmonic_analysis.enhanced_modal_analyzer import EnhancedModalAnalyzer
 
 analyzer = EnhancedModalAnalyzer()
 result = analyzer.analyze_modal_characteristics(['G', 'F', 'G'])
@@ -759,7 +774,7 @@ print(f"Parent Key: {result.parent_key_signature}")
 **Debugging Steps**:
 ```python
 # Trace functional analysis confidence calculation
-from src.music_theory_analysis.functional_harmony import FunctionalHarmonyAnalyzer
+from src.harmonic_analysis.functional_harmony import FunctionalHarmonyAnalyzer
 
 analyzer = FunctionalHarmonyAnalyzer()
 result = analyzer.analyze_functionally(['C', 'F', 'G', 'C'])
@@ -768,7 +783,7 @@ print(f"Cadences: {[str(c) for c in result.cadences]}")
 print(f"Roman Numerals: {[c.roman_numeral for c in result.chords]}")
 
 # Check evidence generation in multiple interpretation service
-from src.music_theory_analysis.multiple_interpretation_service import MultipleInterpretationService
+from src.harmonic_analysis.multiple_interpretation_service import MultipleInterpretationService
 service = MultipleInterpretationService()
 evidence = service._collect_functional_evidence(['C', 'F', 'G', 'C'], result)
 for e in evidence:
@@ -786,7 +801,7 @@ for e in evidence:
 ```python
 # Analyze specific failing test case
 import json
-from src.music_theory_analysis.multiple_interpretation_service import analyze_progression_multiple
+from src.harmonic_analysis.multiple_interpretation_service import analyze_progression_multiple
 
 # Load test case
 with open('tests/generated/comprehensive-multi-layer-tests.json') as f:
@@ -819,7 +834,7 @@ print(f"Evidence Types: {[e.type for e in actual.evidence]}")
 
 ```python
 # Optimize cache for specific usage patterns
-from src.music_theory_analysis.multiple_interpretation_service import AnalysisCache
+from src.harmonic_analysis.multiple_interpretation_service import AnalysisCache
 
 # Custom cache configuration
 cache = AnalysisCache(max_size=1000, ttl_minutes=30)  # Increased for high-volume usage
@@ -837,7 +852,7 @@ cache = AnalysisCache(max_size=1000, ttl_minutes=30)  # Increased for high-volum
 # Profile analysis performance
 import time
 import asyncio
-from src.music_theory_analysis.multiple_interpretation_service import analyze_progression_multiple
+from src.harmonic_analysis.multiple_interpretation_service import analyze_progression_multiple
 
 async def profile_analysis():
     test_progressions = [
@@ -846,12 +861,12 @@ async def profile_analysis():
         ['G', 'F', 'G'],
         ['C', 'Am', 'Dm', 'G']
     ]
-    
+
     start = time.time()
     for progression in test_progressions:
         result = await analyze_progression_multiple(progression)
     end = time.time()
-    
+
     print(f"Average analysis time: {(end - start) / len(test_progressions) * 1000:.2f}ms")
 
 asyncio.run(profile_analysis())
@@ -863,7 +878,7 @@ asyncio.run(profile_analysis())
 **Use Case**: Adding domain-specific analytical evidence
 **Implementation**:
 ```python
-from src.music_theory_analysis.multiple_interpretation_service import EvidenceType, AnalysisEvidence
+from src.harmonic_analysis.multiple_interpretation_service import EvidenceType, AnalysisEvidence
 
 # Extend evidence types for specific musical domains
 class CustomEvidenceType(EvidenceType):
@@ -888,10 +903,10 @@ custom_evidence = AnalysisEvidence(
 async def batch_analyze_progressions(progressions_batch):
     """Efficiently analyze multiple progressions with shared context"""
     results = await asyncio.gather(*[
-        analyze_progression_multiple(progression) 
+        analyze_progression_multiple(progression)
         for progression in progressions_batch
     ])
-    
+
     # Aggregate results for pattern analysis
     analysis_summary = {
         'total_progressions': len(results),
@@ -899,7 +914,7 @@ async def batch_analyze_progressions(progressions_batch):
         'modal_dominant': sum(1 for r in results if r.primary_analysis.type == InterpretationType.MODAL),
         'average_confidence': sum(r.primary_analysis.confidence for r in results) / len(results)
     }
-    
+
     return results, analysis_summary
 ```
 
@@ -909,18 +924,18 @@ async def batch_analyze_progressions(progressions_batch):
 ```python
 class CustomMultipleInterpretationService(MultipleInterpretationService):
     """Extended service with custom confidence calibration"""
-    
+
     def _calculate_confidence(self, evidence):
         base_confidence = super()._calculate_confidence(evidence)
-        
+
         # Custom calibration for specific domains
         if self._is_jazz_context(evidence):
             return min(1.0, base_confidence + 0.1)  # Boost jazz confidence
         elif self._is_classical_context(evidence):
             return max(0.3, base_confidence - 0.1)  # More conservative for classical
-        
+
         return base_confidence
-    
+
     def _is_jazz_context(self, evidence):
         jazz_indicators = ['extended', 'substitution', 'chromatic']
         return any(indicator in e.description.lower() for e in evidence for indicator in jazz_indicators)
@@ -981,14 +996,14 @@ def test_chord_progression_endpoint():
 def test_typescript_interface_compatibility():
     """Ensure Python output matches TypeScript interface expectations"""
     result = await analyze_progression_multiple(['C', 'F', 'G', 'C'])
-    
+
     # Verify required fields for frontend consumption
     assert hasattr(result.primary_analysis, 'type')
     assert hasattr(result.primary_analysis, 'analysis')
     assert hasattr(result.primary_analysis, 'confidence')
     assert hasattr(result, 'alternative_analyses')
     assert hasattr(result, 'metadata')
-    
+
     # Verify data types match TypeScript expectations
     assert isinstance(result.primary_analysis.confidence, float)
     assert 0.0 <= result.primary_analysis.confidence <= 1.0

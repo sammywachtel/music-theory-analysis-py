@@ -9,8 +9,7 @@ Tests the sophisticated modal detection capabilities including:
 """
 
 import pytest
-
-from music_theory_analysis import (
+from harmonic_analysis import (
     EnhancedModalAnalyzer,
     EvidenceType,
     ModalAnalysisResult,

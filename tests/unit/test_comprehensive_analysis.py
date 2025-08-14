@@ -3,8 +3,7 @@ Unit tests for comprehensive analysis engine.
 """
 
 import pytest
-
-from music_theory_analysis.comprehensive_analysis import (
+from harmonic_analysis.comprehensive_analysis import (
     ComprehensiveAnalysisEngine,
     ComprehensiveAnalysisResult,
 )
@@ -60,7 +59,7 @@ class TestComprehensiveAnalysisEngine:
     @pytest.mark.asyncio
     async def test_multiple_interpretations_fallback(self, analyzer):
         """Test multiple interpretations with fallback."""
-        from music_theory_analysis.types import AnalysisOptions
+        from harmonic_analysis.types import AnalysisOptions
 
         options = AnalysisOptions(parent_key="C major")
         result = await analyzer.analyze_with_multiple_interpretations(

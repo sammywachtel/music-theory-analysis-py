@@ -3,15 +3,14 @@ Unit tests for chord parsing and logic.
 """
 
 import pytest
-
-from music_theory_analysis.chord_logic import (
+from harmonic_analysis.chord_logic import (
     ChordMatch,
     ChordParser,
     determine_chord_function,
     find_chord_matches,
     parse_chord_progression,
 )
-from music_theory_analysis.types import ChordFunction
+from harmonic_analysis.types import ChordFunction
 
 
 class TestChordParser:

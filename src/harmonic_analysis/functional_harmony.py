@@ -254,7 +254,7 @@ class FunctionalHarmonyAnalyzer:
             if tonic in NOTE_TO_PITCH_CLASS:
                 return {
                     "tonic": tonic,
-                    "is_minor": "minor" in mode or "m" in mode.lower(),
+                    "is_minor": mode == "minor" or mode == "m",
                 }
         return None
 

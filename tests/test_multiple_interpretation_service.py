@@ -12,8 +12,7 @@ Tests comprehensive multi-perspective analysis including:
 import asyncio
 
 import pytest
-
-from music_theory_analysis import (
+from harmonic_analysis import (
     AnalysisOptions,
     EvidenceType,
     InterpretationType,

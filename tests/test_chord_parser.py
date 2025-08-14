@@ -10,8 +10,7 @@ Tests comprehensive chord parsing and detection including:
 """
 
 import pytest
-
-from music_theory_analysis import (
+from harmonic_analysis import (
     ChordMatch,
     ChordParser,
     find_chords_from_midi,
