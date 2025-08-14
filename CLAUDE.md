@@ -12,6 +12,310 @@ This is a comprehensive music theory analysis library ported from TypeScript, de
 - ✅ Comprehensive test suite with 427 sophisticated test cases
 - 🔧 Confidence calibration needed for optimal performance
 
+## Library Purpose and Intended Usage
+
+### Primary Use Case
+This library serves as the **backend analysis engine** for a comprehensive music theory application. It analyzes chord progressions to provide:
+
+1. **Multiple Analytical Perspectives**: Functional harmony, modal analysis, and chromatic harmony
+2. **Educational Context**: Explanations suitable for different pedagogical levels (beginner/intermediate/advanced)
+3. **Confidence-Based Results**: Analytical certainty scores to guide user experience
+4. **Evidence-Based Reasoning**: Detailed justification for analytical conclusions
+
+### Integration Pattern
+The library is designed to be consumed by:
+- **FastAPI Backend**: REST endpoints for chord progression analysis
+- **Frontend Applications**: React/TypeScript music theory tools
+- **Educational Software**: Music theory learning applications
+- **Analysis Tools**: Standalone music analysis utilities
+
+### Core API Usage Examples
+
+#### Basic Chord Progression Analysis
+```python
+from music_theory_analysis import analyze_progression_multiple
+from music_theory_analysis.types import AnalysisOptions
+
+# Simple analysis
+result = await analyze_progression_multiple(['C', 'F', 'G', 'C'])
+print(f"Primary: {result.primary_analysis.analysis}")
+print(f"Confidence: {result.primary_analysis.confidence:.2f}")
+
+# With options
+options = AnalysisOptions(
+    parent_key="C major",
+    pedagogical_level="intermediate",
+    confidence_threshold=0.6,
+    max_alternatives=2
+)
+result = await analyze_progression_multiple(['Am', 'F', 'C', 'G'], options)
+```
+
+#### Multiple Interpretation Results
+```python
+# Access primary analysis
+primary = result.primary_analysis
+print(f"Type: {primary.type}")           # FUNCTIONAL, MODAL, or CHROMATIC
+print(f"Analysis: {primary.analysis}")   # Human-readable description
+print(f"Roman: {primary.roman_numerals}")# I vi IV V
+print(f"Key: {primary.key_signature}")   # C major
+
+# Access alternatives
+for alt in result.alternative_analyses:
+    print(f"Alternative: {alt.analysis} (confidence: {alt.confidence:.2f})")
+    print(f"Relationship: {alt.relationship_to_primary}")
+```
+
+#### Evidence and Reasoning Access
+```python
+# Examine analytical evidence
+for evidence in result.primary_analysis.evidence:
+    print(f"Evidence: {evidence.description}")
+    print(f"Strength: {evidence.strength:.2f}")
+    print(f"Type: {evidence.type}")
+    print(f"Basis: {evidence.musical_basis}")
+```
+
+## Technical Background and Architecture
+
+### Music Theory Foundation
+
+#### Parent Key + Local Tonic Approach
+**Critical Concept**: This library uses a sophisticated modal analysis approach that separates:
+- **Parent Key Signature**: The underlying scale (e.g., C major scale, no sharps/flats)
+- **Local Tonic**: The note functioning as the tonal center (e.g., G)
+- **Resulting Mode**: The combination (e.g., G Mixolydian = C major scale with G as tonic)
+
+This approach provides **pedagogically valuable** analysis that helps users understand modal relationships within familiar key signatures.
+
+#### Analytical Hierarchy
+The library implements a **layered analysis approach** based on music theory pedagogy:
+
+1. **Functional Harmony (Foundation) - 80% of Western Music**
+   - Roman numeral analysis (I-IV-V progressions)
+   - Chord function identification (tonic, predominant, dominant)
+   - Cadence analysis and voice leading
+   - Should be the primary analysis for most progressions
+
+2. **Modal Analysis (Specialized) - 15% of Western Music**
+   - Applied when functional analysis reveals modal characteristics
+   - Maintains existing modal detection strengths
+   - Presented as enhancement to functional analysis, not replacement
+
+3. **Chromatic Harmony (Advanced) - 5% of Western Music**
+   - Secondary dominants (V/V, V/vi)
+   - Borrowed chords and modal interchange
+   - Non-functional progressions
+
+### Implementation Architecture
+
+#### Core Analysis Pipeline
+```
+Input: ['Am', 'F', 'C', 'G']
+    ↓
+1. Parallel Analysis
+   ├── Functional Harmony Analyzer
+   ├── Enhanced Modal Analyzer  
+   └── Chromatic Analysis
+    ↓
+2. Evidence Collection
+   ├── Cadential Evidence (bVII-I, V-I patterns)
+   ├── Structural Evidence (first/last chord relationships)
+   ├── Intervallic Evidence (distinctive scale degrees)
+   └── Harmonic Evidence (chord qualities, progressions)
+    ↓
+3. Confidence Calculation
+   ├── Weighted Evidence Scoring
+   ├── Evidence Type Diversity Bonus
+   └── Final Confidence Assignment
+    ↓
+4. Multiple Interpretation Generation
+   ├── Primary Analysis (highest confidence)
+   ├── Alternative Analyses (above threshold)
+   └── Relationship Descriptions
+    ↓
+Output: MultipleInterpretationResult
+```
+
+#### Analysis Engine Interaction
+```python
+# How the engines work together
+class MultipleInterpretationService:
+    def __init__(self):
+        self.functional_analyzer = FunctionalHarmonyAnalyzer()
+        self.modal_analyzer = EnhancedModalAnalyzer()
+        
+    async def analyze_progression(self, chords):
+        # Run analyzers in parallel
+        functional_result, modal_result = await asyncio.gather(
+            self._run_functional_analysis(chords),
+            self._run_modal_analysis(chords)
+        )
+        
+        # Create interpretations with evidence
+        interpretations = await self._calculate_interpretations(
+            chords, functional_result, modal_result
+        )
+        
+        # Rank by confidence and filter
+        return self._create_final_result(interpretations)
+```
+
+### Key Technical Concepts
+
+#### Evidence-Based Analysis
+The library uses **music theory evidence** to build confidence scores:
+
+```python
+class AnalysisEvidence:
+    type: EvidenceType          # CADENTIAL, STRUCTURAL, INTERVALLIC, etc.
+    strength: float             # 0.0 to 1.0
+    description: str            # Human-readable evidence
+    musical_basis: str          # Theoretical justification
+```
+
+**Evidence Types and Weights:**
+- **CADENTIAL (0.4)**: Strong harmonic resolutions (V-I, bVII-I)
+- **STRUCTURAL (0.25)**: Chord framing and positioning
+- **INTERVALLIC (0.2)**: Distinctive modal scale degrees
+- **HARMONIC (0.15)**: Chord quality patterns
+- **CONTEXTUAL (0.15)**: Overall harmonic context
+
+#### Confidence Framework Philosophy
+The confidence scoring reflects **analytical certainty** rather than musical quality:
+
+- **0.85-1.0 (Definitive)**: Unambiguous harmonic markers present
+- **0.65-0.84 (Strong)**: Clear evidence with minimal ambiguity  
+- **0.45-0.64 (Moderate)**: Valid interpretation with competing possibilities
+- **0.25-0.44 (Weak)**: Theoretically possible but lacks context
+- **0.0-0.24 (Insufficient)**: Requires significant assumptions
+
+#### Pedagogical Level Adaptation
+```python
+class PedagogicalLevel(Enum):
+    BEGINNER = "beginner"       # Show only high-confidence primary analysis
+    INTERMEDIATE = "intermediate"   # Show alternatives when reasonably strong
+    ADVANCED = "advanced"       # Always show multiple perspectives
+```
+
+### Historical Context and Migration Background
+
+#### TypeScript to Python Migration Journey
+This library represents a **comprehensive port** of sophisticated TypeScript music analysis logic:
+
+**Phase 1: Core Algorithm Port (Completed)**
+- Functional harmony analysis with complete Roman numeral logic
+- Enhanced modal detection with pattern matching
+- Chromatic harmony and secondary dominant detection
+- Chord parsing with all edge cases
+
+**Phase 2: Test Framework Port (Completed)**
+- 427 comprehensive test cases from JavaScript test generator
+- Multi-layer expectations with confidence thresholds
+- Behavioral parity validation against TypeScript baseline
+
+**Phase 3: Integration and Calibration (Current)**
+- Confidence calibration to match frontend expectations
+- Backend integration for REST API consumption
+- Performance optimization and test suite refinement
+
+#### Original TypeScript System Performance
+The original TypeScript implementation achieved:
+- **97.94% success rate** (713/728 tests passed)
+- **All failures** in "ambiguous" category (15 failures)
+- **Strengths**: Modal analysis, functional progressions
+- **Weaknesses**: Mixolydian progressions without parent key context
+
+### Testing Philosophy and Framework
+
+#### Comprehensive Multi-Layer Testing
+The test suite validates **multiple analytical perspectives simultaneously**:
+
+```python
+@dataclass
+class MultiLayerTestCase:
+    chords: List[str]                          # Input progression
+    expected_functional: FunctionalExpectation # Roman numerals, key, confidence
+    expected_modal: ModalExpectation           # Mode, parent key, local tonic
+    expected_chromatic: ChromaticExpectation   # Secondary dominants, borrowed chords
+    expected_ui: UIExpectation                 # Display thresholds, user experience
+    validation_criteria: ValidationCriteria    # Success/failure criteria
+```
+
+#### Test Categories and Coverage
+- **modal_characteristic (168 tests)**: Progressions with clear modal features
+- **modal_contextless (168 tests)**: Modal progressions without key context
+- **functional_clear (60 tests)**: Unambiguous functional harmony
+- **chromatic_* (7 tests)**: Secondary dominants and borrowed chords
+- **ambiguous (9 tests)**: Theoretically unclear progressions
+- **edge_* (10 tests)**: Single chords, repetition, enharmonic equivalents
+- **jazz_complex (5 tests)**: Extended harmony and complex progressions
+
+#### Success Criteria Philosophy
+Tests validate **theoretical accuracy** rather than user preference:
+- Modal tests require specific mode identification and parent key
+- Functional tests require accurate Roman numeral analysis
+- Confidence tests ensure analytical certainty matches evidence strength
+- UI tests verify appropriate display thresholds for different user levels
+
+### Performance and Optimization
+
+#### Current Performance Characteristics
+- **Test Coverage**: 72% (good foundation, room for improvement)
+- **Analysis Speed**: ~2ms per progression (includes caching)
+- **Memory Usage**: Minimal (stateless analyzers, LRU cache)
+- **Concurrency**: Full async support with parallel analysis engines
+
+#### Optimization Opportunities
+1. **Chord Parser (17% coverage)**: Most complex module, needs attention
+2. **Comprehensive Analysis (29% coverage)**: Main orchestrator optimization
+3. **Test Suite Performance**: Currently 32% overall success rate (target: 70%+)
+
+### Integration Considerations
+
+#### FastAPI Backend Integration
+The library is designed for seamless FastAPI integration:
+
+```python
+from fastapi import FastAPI
+from music_theory_analysis import analyze_progression_multiple
+
+app = FastAPI()
+
+@app.post("/analyze-chord-progression/")
+async def analyze_progression(progression: List[str]):
+    result = await analyze_progression_multiple(progression)
+    return {
+        "primary_analysis": result.primary_analysis,
+        "alternatives": result.alternative_analyses,
+        "metadata": result.metadata
+    }
+```
+
+#### Frontend Integration Pattern
+The library provides structured output for frontend consumption:
+
+```typescript
+// TypeScript interface for frontend consumption
+interface AnalysisResult {
+  primary_analysis: {
+    type: "functional" | "modal" | "chromatic";
+    analysis: string;
+    confidence: number;
+    roman_numerals?: string;
+    key_signature?: string;
+    mode?: string;
+    evidence: AnalysisEvidence[];
+  };
+  alternative_analyses: AlternativeAnalysis[];
+  metadata: {
+    total_interpretations_considered: number;
+    show_alternatives: boolean;
+    analysis_time_ms: number;
+  };
+}
+```
+
 ## Current Performance Status (August 2025)
 
 ### Latest Test Results Summary
@@ -421,10 +725,297 @@ asyncio.run(test())
 - Preserve Parent Key + Local Tonic approach for modal analysis
 - Ensure confidence scoring reflects actual analytical certainty
 
+## Troubleshooting and Common Issues
+
+### Debugging Analysis Results
+
+#### Issue: Unexpected Modal Analysis Results
+**Symptoms**: Modal analysis returns incorrect mode or no modal interpretation
+**Common Causes**:
+1. Missing parent key context - modal analysis needs harmonic context
+2. Chord spelling variations (C vs B#) affecting pattern recognition
+3. Insufficient modal evidence (need characteristic intervals like bVII)
+
+**Debugging Steps**:
+```python
+# Check modal evidence collection
+from src.music_theory_analysis.enhanced_modal_analyzer import EnhancedModalAnalyzer
+
+analyzer = EnhancedModalAnalyzer()
+result = analyzer.analyze_modal_characteristics(['G', 'F', 'G'])
+print(f"Mode: {result.mode_name}")
+print(f"Confidence: {result.confidence}")
+print(f"Evidence: {[str(e) for e in result.evidence]}")
+print(f"Parent Key: {result.parent_key_signature}")
+```
+
+#### Issue: Low Functional Confidence Scores
+**Symptoms**: Functional analysis returns confidence below expected thresholds
+**Common Causes**:
+1. Weak cadential evidence (no V-I or other strong resolutions)
+2. Ambiguous chord progressions without clear tonal center
+3. Evidence weight distribution favoring other analysis types
+
+**Debugging Steps**:
+```python
+# Trace functional analysis confidence calculation
+from src.music_theory_analysis.functional_harmony import FunctionalHarmonyAnalyzer
+
+analyzer = FunctionalHarmonyAnalyzer()
+result = analyzer.analyze_functionally(['C', 'F', 'G', 'C'])
+print(f"Base Confidence: {result.confidence}")
+print(f"Cadences: {[str(c) for c in result.cadences]}")
+print(f"Roman Numerals: {[c.roman_numeral for c in result.chords]}")
+
+# Check evidence generation in multiple interpretation service
+from src.music_theory_analysis.multiple_interpretation_service import MultipleInterpretationService
+service = MultipleInterpretationService()
+evidence = service._collect_functional_evidence(['C', 'F', 'G', 'C'], result)
+for e in evidence:
+    print(f"Evidence: {e.description} (strength: {e.strength})")
+```
+
+#### Issue: Test Case Failures
+**Symptoms**: Comprehensive tests failing with confidence mismatches
+**Root Cause Analysis Process**:
+1. **Identify Pattern**: Are failures in specific categories (functional, modal, chromatic)?
+2. **Compare Expectations**: Check test generator logic vs actual output
+3. **Validate Music Theory**: Ensure test expectations are theoretically sound
+
+**Example Investigation**:
+```python
+# Analyze specific failing test case
+import json
+from src.music_theory_analysis.multiple_interpretation_service import analyze_progression_multiple
+
+# Load test case
+with open('tests/generated/comprehensive-multi-layer-tests.json') as f:
+    tests = json.load(f)
+
+failing_test = next(t for t in tests if t['id'] == 'multi-337')  # Replace with actual failing ID
+chords = failing_test['chords']
+expected = failing_test['expected_functional']
+
+# Run analysis
+result = await analyze_progression_multiple(chords)
+actual = result.primary_analysis
+
+print(f"Test ID: {failing_test['id']}")
+print(f"Chords: {chords}")
+print(f"Expected Key: {expected['key_center']} (conf: {expected['confidence']})")
+print(f"Actual Key: {actual.key_signature} (conf: {actual.confidence})")
+print(f"Evidence Count: {len(actual.evidence)}")
+print(f"Evidence Types: {[e.type for e in actual.evidence]}")
+```
+
+### Performance Optimization
+
+#### Memory Usage Optimization
+**Current Usage**: Minimal due to stateless design
+**Optimization Opportunities**:
+1. **Cache Tuning**: Adjust cache size and TTL for usage patterns
+2. **Chord Parser Optimization**: Most complex module (17% coverage)
+3. **Test Data Generation**: Large JSON files can be streamed
+
+```python
+# Optimize cache for specific usage patterns
+from src.music_theory_analysis.multiple_interpretation_service import AnalysisCache
+
+# Custom cache configuration
+cache = AnalysisCache(max_size=1000, ttl_minutes=30)  # Increased for high-volume usage
+```
+
+#### Analysis Speed Optimization
+**Current Speed**: ~2ms per progression
+**Bottlenecks**:
+1. Evidence collection (multiple loops over chord progressions)
+2. Parallel analysis coordination (async overhead)
+3. Confidence calculation (weighted evidence processing)
+
+**Optimization Strategies**:
+```python
+# Profile analysis performance
+import time
+import asyncio
+from src.music_theory_analysis.multiple_interpretation_service import analyze_progression_multiple
+
+async def profile_analysis():
+    test_progressions = [
+        ['C', 'F', 'G', 'C'],
+        ['Am', 'F', 'C', 'G'],
+        ['G', 'F', 'G'],
+        ['C', 'Am', 'Dm', 'G']
+    ]
+    
+    start = time.time()
+    for progression in test_progressions:
+        result = await analyze_progression_multiple(progression)
+    end = time.time()
+    
+    print(f"Average analysis time: {(end - start) / len(test_progressions) * 1000:.2f}ms")
+
+asyncio.run(profile_analysis())
+```
+
+### Advanced Usage Patterns
+
+#### Custom Evidence Types
+**Use Case**: Adding domain-specific analytical evidence
+**Implementation**:
+```python
+from src.music_theory_analysis.multiple_interpretation_service import EvidenceType, AnalysisEvidence
+
+# Extend evidence types for specific musical domains
+class CustomEvidenceType(EvidenceType):
+    JAZZ_SUBSTITUTION = "jazz_substitution"
+    VOICE_LEADING = "voice_leading"
+    HARMONIC_RHYTHM = "harmonic_rhythm"
+
+# Create custom evidence
+custom_evidence = AnalysisEvidence(
+    type=CustomEvidenceType.JAZZ_SUBSTITUTION,
+    strength=0.8,
+    description="Tritone substitution detected",
+    supported_interpretations=[InterpretationType.CHROMATIC],
+    musical_basis="bII7 substitutes for V7 in jazz harmony"
+)
+```
+
+#### Batch Analysis Processing
+**Use Case**: Analyzing large datasets of chord progressions
+**Implementation**:
+```python
+async def batch_analyze_progressions(progressions_batch):
+    """Efficiently analyze multiple progressions with shared context"""
+    results = await asyncio.gather(*[
+        analyze_progression_multiple(progression) 
+        for progression in progressions_batch
+    ])
+    
+    # Aggregate results for pattern analysis
+    analysis_summary = {
+        'total_progressions': len(results),
+        'functional_dominant': sum(1 for r in results if r.primary_analysis.type == InterpretationType.FUNCTIONAL),
+        'modal_dominant': sum(1 for r in results if r.primary_analysis.type == InterpretationType.MODAL),
+        'average_confidence': sum(r.primary_analysis.confidence for r in results) / len(results)
+    }
+    
+    return results, analysis_summary
+```
+
+#### Custom Confidence Calibration
+**Use Case**: Domain-specific confidence adjustments
+**Implementation**:
+```python
+class CustomMultipleInterpretationService(MultipleInterpretationService):
+    """Extended service with custom confidence calibration"""
+    
+    def _calculate_confidence(self, evidence):
+        base_confidence = super()._calculate_confidence(evidence)
+        
+        # Custom calibration for specific domains
+        if self._is_jazz_context(evidence):
+            return min(1.0, base_confidence + 0.1)  # Boost jazz confidence
+        elif self._is_classical_context(evidence):
+            return max(0.3, base_confidence - 0.1)  # More conservative for classical
+        
+        return base_confidence
+    
+    def _is_jazz_context(self, evidence):
+        jazz_indicators = ['extended', 'substitution', 'chromatic']
+        return any(indicator in e.description.lower() for e in evidence for indicator in jazz_indicators)
+```
+
+### Error Handling and Edge Cases
+
+#### Malformed Chord Input
+**Handling Strategy**: Graceful degradation with informative errors
+```python
+# Example error handling patterns
+try:
+    result = await analyze_progression_multiple(['C', 'InvalidChord', 'G'])
+except ValueError as e:
+    print(f"Chord parsing error: {e}")
+    # Fallback to partial analysis or chord validation
+```
+
+#### Empty or Single Chord Progressions
+**Current Behavior**: Library handles single chords and empty inputs
+**Edge Cases**:
+- Single chord: Returns basic harmonic information
+- Empty progression: Raises ValueError with clear message
+- Duplicate chords: Analyzes as intended (e.g., 'C C C' for pedal tones)
+
+#### Enharmonic Equivalents
+**Handling**: Library normalizes enharmonic spellings
+**Examples**:
+- C# and Db are treated as equivalent
+- F# and Gb major scales produce identical analysis
+- Modal analysis preserves enharmonic context when relevant
+
+### Integration Testing Strategies
+
+#### Backend Integration Validation
+```python
+# Test FastAPI integration
+import pytest
+from fastapi.testclient import TestClient
+from your_backend_app import app
+
+client = TestClient(app)
+
+def test_chord_progression_endpoint():
+    response = client.post(
+        "/analyze-chord-progression/",
+        json={"progression": ["C", "F", "G", "C"]}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "primary_analysis" in data
+    assert data["primary_analysis"]["confidence"] > 0.5
+```
+
+#### Frontend Integration Validation
+```python
+# Test TypeScript interface compatibility
+def test_typescript_interface_compatibility():
+    """Ensure Python output matches TypeScript interface expectations"""
+    result = await analyze_progression_multiple(['C', 'F', 'G', 'C'])
+    
+    # Verify required fields for frontend consumption
+    assert hasattr(result.primary_analysis, 'type')
+    assert hasattr(result.primary_analysis, 'analysis')
+    assert hasattr(result.primary_analysis, 'confidence')
+    assert hasattr(result, 'alternative_analyses')
+    assert hasattr(result, 'metadata')
+    
+    # Verify data types match TypeScript expectations
+    assert isinstance(result.primary_analysis.confidence, float)
+    assert 0.0 <= result.primary_analysis.confidence <= 1.0
+```
+
 ## Integration Status
 
 **Current State**: Standalone library ready for integration
 **Next Phase**: Backend integration in main music theory application
 **Target**: Replace TypeScript analysis service with Python backend
+
+### Migration Path from TypeScript
+1. **Phase 1**: Deploy Python backend alongside TypeScript (A/B testing)
+2. **Phase 2**: Route specific analysis types to Python (modal analysis first)
+3. **Phase 3**: Full cutover with TypeScript fallback
+4. **Phase 4**: Remove TypeScript service and dependencies
+
+### Production Readiness Checklist
+- ✅ Core analysis algorithms ported and tested
+- ✅ Comprehensive test suite with 427 test cases
+- ✅ 96% behavioral parity with TypeScript baseline
+- ✅ Evidence-based confidence scoring framework
+- ✅ Multi-level pedagogical support
+- ✅ Async/await architecture for scalability
+- ✅ Caching and performance optimization
+- 🔧 Confidence calibration (needs adjustment)
+- 🔧 Test suite optimization (32% → 70% target)
+- ⏳ FastAPI backend integration (next phase)
 
 The library demonstrates strong behavioral parity with the original TypeScript implementation and is ready for production use with the noted calibration improvements.
