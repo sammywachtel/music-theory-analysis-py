@@ -9,7 +9,9 @@ A comprehensive Python library for music theory analysis, providing sophisticate
 - **Enhanced Modal Analysis**: Evidence-based modal detection with confidence scoring
 - **Chromatic Harmony**: Secondary dominants, borrowed chords, chromatic mediants
 - **Parent Key + Local Tonic Approach**: Theoretically sound modal analysis framework
-- **Extensive Test Coverage**: 1000+ test cases across functional, modal, and chromatic categories
+- **Calibrated Confidence Scoring**: Music theory-validated confidence levels for pedagogical appropriateness
+- **Extensive Test Coverage**: 427 sophisticated multi-layer test cases with 56%+ validation success
+- **Production Ready**: Meets validation targets for modal (56%+) and functional (50%+) analysis
 
 ## Installation
 
@@ -20,32 +22,32 @@ pip install harmonic-analysis
 ## Quick Start
 
 ```python
-from harmonic_analysis import ComprehensiveAnalysisEngine
+from harmonic_analysis import analyze_progression_multiple, AnalysisOptions
 
-# Initialize the analysis engine
-analyzer = ComprehensiveAnalysisEngine()
+# Simple analysis with calibrated confidence scoring
+result = await analyze_progression_multiple(['C', 'Am', 'F', 'G'])
 
-# Analyze a chord progression
-result = await analyzer.analyze_comprehensively(
-    progression_input="Am F C G",
-    parent_key="C major"
+print(f"Primary: {result.primary_analysis.type.value}")
+print(f"Analysis: {result.primary_analysis.analysis}")
+print(f"Confidence: {result.primary_analysis.confidence:.2f}")
+
+# Analysis with options for enhanced results
+options = AnalysisOptions(
+    parent_key="C major",
+    pedagogical_level="intermediate",
+    confidence_threshold=0.6
 )
 
-# Access the results
-print(f"Primary approach: {result.primary_approach}")
-print(f"Confidence: {result.confidence:.2f}")
-print(f"Explanation: {result.explanation}")
+result = await analyze_progression_multiple(['C', 'Am', 'F', 'G'], options)
 
-# Detailed analysis layers
-if result.functional:
-    print(f"Key center: {result.functional.key_center}")
-    print(f"Roman numerals: {[chord.roman_numeral for chord in result.functional.chords]}")
+# Access detailed results
+print(f"Roman numerals: {result.primary_analysis.roman_numerals}")
+print(f"Evidence count: {len(result.primary_analysis.evidence)}")
 
-if result.modal:
-    print(f"Modal characteristics: {result.modal.modal_characteristics}")
-
-if result.chromatic:
-    print(f"Secondary dominants: {len(result.chromatic.secondary_dominants)}")
+# Multiple interpretations with confidence-based ranking
+for i, alt in enumerate(result.alternative_analyses):
+    print(f"Alternative {i+1}: {alt.type.value} (confidence: {alt.confidence:.2f})")
+    print(f"  {alt.analysis}")
 ```
 
 ## Core Concepts

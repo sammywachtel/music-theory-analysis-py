@@ -408,29 +408,46 @@ class MultipleInterpretationService:
         """Collect evidence for functional analysis"""
         evidence: List[AnalysisEvidence] = []
 
-        # Cadential evidence
+        # Cadential evidence with cadence-specific strength calibration
         if functional_result.cadences:
             cadence = functional_result.cadences[0]
             cadence_name = getattr(
                 cadence, "name", getattr(cadence, "type", "authentic")
             )
+
+            # Cadence-specific strength values based on music theory analysis
+            cadence_strengths = {
+                "authentic": 0.90,  # V-I - strongest resolution
+                "plagal": 0.65,  # IV-I - gentle, conclusive but weak
+                "deceptive": 0.70,  # V-vi - surprising but clear
+                "half": 0.50,  # ends on V - inconclusive
+                "phrygian": 0.80,  # bII-I - strong modal cadence
+                "modal": 0.75,  # bVII-I and other modal cadences
+            }
+
+            # Normalize cadence name and get appropriate strength
+            cadence_key = cadence_name.lower().replace("_", "")
+            cadence_strength = cadence_strengths.get(
+                cadence_key, 0.60
+            )  # default for unknown
+
             evidence.append(
                 AnalysisEvidence(
                     type=EvidenceType.CADENTIAL,
-                    strength=0.9,
-                    description="Clear cadential progression identified",
+                    strength=cadence_strength,
+                    description=f"{cadence_name.title()} cadential progression identified",
                     supported_interpretations=[InterpretationType.FUNCTIONAL],
-                    musical_basis=f"{cadence_name} cadence provides tonal resolution",
+                    musical_basis=f"{cadence_name} cadence provides {self._get_cadence_quality(cadence_key)} tonal resolution",
                 )
             )
 
-        # Structural framing
+        # Structural framing (reduced strength for realistic confidence)
         if len(chords) >= 3 and chords[0] == chords[-1]:
             evidence.append(
                 AnalysisEvidence(
                     type=EvidenceType.STRUCTURAL,
-                    strength=0.7,
-                    description="Strong tonic framing",
+                    strength=0.6,
+                    description="Tonic framing present",
                     supported_interpretations=[
                         InterpretationType.FUNCTIONAL,
                         InterpretationType.MODAL,
@@ -439,29 +456,49 @@ class MultipleInterpretationService:
                 )
             )
 
-        # Roman numeral clarity
+        # Roman numeral clarity - cap and scale down excessive confidence
         if functional_result.confidence >= 0.5:
+            # Scale down overly confident functional scores to be more realistic
+            # For plagal cadences and weak progressions, use even lower strength
+            harmonic_strength = min(0.60, functional_result.confidence * 0.65)
             evidence.append(
                 AnalysisEvidence(
                     type=EvidenceType.HARMONIC,
-                    strength=functional_result.confidence,
+                    strength=harmonic_strength,
                     description="Clear functional harmonic progression",
                     supported_interpretations=[InterpretationType.FUNCTIONAL],
                     musical_basis="Roman numeral analysis shows clear tonal relationships",
                 )
             )
 
-        # Strong Roman numeral progression (I-vi-IV-V type progressions)
+        # Roman numeral progression strength with pattern recognition
         if len(functional_result.chords) >= 3:
             roman_numerals = [chord.roman_numeral for chord in functional_result.chords]
-            if any(rn in ["I", "i"] for rn in roman_numerals):
+
+            # Detect strong functional patterns that deserve high confidence
+            strong_patterns = self._detect_strong_functional_patterns(roman_numerals)
+
+            if strong_patterns:
+                # High confidence for classic progressions like I-vi-IV-V, ii-V-I, etc.
+                # Use STRUCTURAL type for higher weight (0.25 vs 0.15) and boost strength
                 evidence.append(
                     AnalysisEvidence(
                         type=EvidenceType.STRUCTURAL,
-                        strength=0.8,
-                        description="Strong tonal center establishment",
+                        strength=0.95,
+                        description=f"Classic functional pattern: {strong_patterns[0]}",
                         supported_interpretations=[InterpretationType.FUNCTIONAL],
-                        musical_basis="Roman numeral progression shows clear tonic-based functional relationships",
+                        musical_basis=f"{strong_patterns[0]} progression demonstrates strong tonal logic",
+                    )
+                )
+            elif any(rn in ["I", "i"] for rn in roman_numerals):
+                # Standard confidence for tonic-based progressions
+                evidence.append(
+                    AnalysisEvidence(
+                        type=EvidenceType.HARMONIC,
+                        strength=0.55,
+                        description="Tonic-based harmonic progression",
+                        supported_interpretations=[InterpretationType.FUNCTIONAL],
+                        musical_basis="Roman numeral progression shows tonic-centered relationships",
                     )
                 )
 
@@ -685,6 +722,100 @@ class MultipleInterpretationService:
             reasoning="Analysis completed with limited harmonic information",
             theoretical_basis="Basic chord progression analysis",
         )
+
+    def _get_cadence_quality(self, cadence_key: str) -> str:
+        """Get descriptive quality for different cadence types"""
+        cadence_qualities = {
+            "authentic": "strong",
+            "plagal": "gentle",
+            "deceptive": "surprising",
+            "half": "inconclusive",
+            "phrygian": "modal",
+            "modal": "characteristic",
+        }
+        return cadence_qualities.get(cadence_key, "moderate")
+
+    def _detect_strong_functional_patterns(
+        self, roman_numerals: List[str]
+    ) -> List[str]:
+        """Detect classic functional patterns that deserve high confidence"""
+        patterns = []
+        rn_str = "-".join(roman_numerals)
+
+        # Classic strong progressions (high theoretical strength)
+        strong_patterns = {
+            # Circle of fifths progressions
+            "I-vi-IV-V": ["I-vi-IV-V", "i-VI-iv-V"],
+            "vi-IV-I-V": ["vi-IV-I-V", "VI-iv-i-v"],
+            "IV-I-V-vi": ["IV-I-V-vi", "iv-i-v-VI"],
+            # Jazz standards
+            "ii-V-I": ["ii-V-I", "IIo-V-I", "ii7-V7-I"],
+            "I-vi-ii-V": ["I-vi-ii-V", "i-VI-iio-V"],
+            # Common pop/rock patterns
+            "I-V-vi-IV": ["I-V-vi-IV", "I-V-VI-IV"],
+            "vi-IV-I-V-pop": ["vi-IV-I-V", "VI-IV-I-V"],
+            # Authentic cadences
+            "V-I": ["V-I", "V7-I", "v-i"],
+            "ii-V-I-cadence": ["ii-V-I", "iio-V-I"],
+            # Plagal variants (still functional but weaker - handled elsewhere)
+        }
+
+        # Check for exact matches and partial matches
+        for pattern_name, variations in strong_patterns.items():
+            for variation in variations:
+                if rn_str == variation or rn_str.endswith(variation):
+                    patterns.append(pattern_name)
+                    break
+
+        # Check for sequential patterns (like I-ii-iii-IV)
+        if self._is_sequential_progression(roman_numerals):
+            patterns.append("Sequential progression")
+
+        return patterns
+
+    def _is_sequential_progression(self, roman_numerals: List[str]) -> bool:
+        """Check if progression follows sequential harmonic logic"""
+        # Examples: I-ii-iii-IV, vi-vii-I-ii, etc.
+        if len(roman_numerals) < 3:
+            return False
+
+        # Convert roman numerals to scale degrees for sequence detection
+        degree_map = {
+            "I": 1,
+            "ii": 2,
+            "iii": 3,
+            "IV": 4,
+            "V": 5,
+            "vi": 6,
+            "vii": 7,
+            "i": 1,
+            "II": 2,
+            "III": 3,
+            "iv": 4,
+            "v": 5,
+            "VI": 6,
+            "VII": 7,
+        }
+
+        try:
+            degrees = [degree_map.get(rn.rstrip("7o"), 0) for rn in roman_numerals]
+
+            # Check for ascending or descending sequences
+            if all(
+                degrees[i] + 1 == degrees[i + 1] or degrees[i] - 6 == degrees[i + 1]
+                for i in range(len(degrees) - 1)
+            ):
+                return True  # Ascending sequence
+            if all(
+                degrees[i] - 1 == degrees[i + 1] or degrees[i] + 6 == degrees[i + 1]
+                for i in range(len(degrees) - 1)
+            ):
+                return True  # Descending sequence
+
+        except (KeyError, IndexError):
+            pass
+
+        return False
 
 
 # Export singleton instance
