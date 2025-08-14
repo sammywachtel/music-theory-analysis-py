@@ -232,6 +232,34 @@ The original TypeScript implementation achieved:
 #### Comprehensive Multi-Layer Testing
 The test suite validates **multiple analytical perspectives simultaneously**:
 
+#### Edge Case Behavioral Testing Framework
+**New Addition (August 2025)**: Comprehensive behavioral testing for edge cases that validates appropriate graceful degradation rather than expecting normal performance.
+
+**Key Components:**
+- **EdgeCaseType Enum**: Categorizes different types of edge cases (INSUFFICIENT_DATA, STATIC_HARMONY, PATHOLOGICAL_INPUT, CONTEXTUAL_DEPENDENCY)
+- **EdgeCaseBehaviorExpectation**: Defines expected behavior patterns for each edge case type
+- **Behavioral Validation**: Tests that edge cases behave appropriately as edge cases
+
+**Test File**: `tests/test_edge_case_behavior.py`
+
+**Edge Case Categories:**
+```python
+class EdgeCaseType(Enum):
+    INSUFFICIENT_DATA = "insufficient_data"      # Single chord, empty
+    AMBIGUOUS_HARMONY = "ambiguous_harmony"      # Multiple valid interpretations  
+    PATHOLOGICAL_INPUT = "pathological_input"    # Invalid or nonsensical
+    CONTEXTUAL_DEPENDENCY = "contextual_dependency"  # Needs more context
+    STATIC_HARMONY = "static_harmony"            # No harmonic motion
+```
+
+**Behavioral Expectations:**
+- **Single Chords**: ≤0.4 confidence, acknowledge limitations in reasoning
+- **Static Harmony**: ≤0.3 confidence, mention repetition/static nature  
+- **Pathological Input**: ≤0.5 confidence, acknowledge unusual nature
+- **Contextual Dependency**: ≤0.6 confidence, acknowledge ambiguity
+
+**Testing Philosophy**: Edge cases should demonstrate appropriate uncertainty and provide educational explanations rather than failing entirely.
+
 ```python
 @dataclass
 class MultiLayerTestCase:
@@ -385,6 +413,9 @@ Current thresholds based on music theory expert guidance:
 # Full comprehensive test suite
 python -m pytest tests/test_comprehensive_multi_layer_validation.py -v
 
+# Edge case behavioral testing
+python -m pytest tests/test_edge_case_behavior.py -v
+
 # Specific category testing
 python -m pytest tests/test_comprehensive_multi_layer_validation.py::TestComprehensiveMultiLayerValidation::test_modal_characteristic_cases -v
 
@@ -394,6 +425,9 @@ python scripts/generate_comprehensive_multi_layer_tests.py
 # Core functionality tests
 python -m pytest tests/test_enhanced_modal_analyzer.py -v
 python -m pytest tests/test_functional_harmony.py -v
+
+# Run all tests including edge case validation
+python -m pytest tests/ -v --tb=short
 ```
 
 ### Development Workflow
@@ -450,6 +484,30 @@ Each test case includes multi-layer expectations:
 - **Modal**: Expected mode, parent key, local tonic, confidence
 - **Chromatic**: Expected secondary dominants, borrowed chords
 - **UI**: Display thresholds and user experience expectations
+
+### Edge Case Behavioral Validation (New)
+**File**: `tests/test_edge_case_behavior.py` - 311 lines of comprehensive behavioral testing
+
+**Key Test Methods:**
+- `test_single_chord_graceful_degradation()`: Validates single chord analysis with appropriate limitations
+- `test_static_harmony_behavior()`: Tests repeated chord sequences (C-C-C) with low confidence
+- `test_pathological_input_handling()`: Handles unusual sequences (chromatic, augmented, enharmonic)
+- `test_contextual_dependency_cases()`: Tests ambiguous progressions (C-G could be I-V or V-I)
+- `test_edge_case_consistency()`: Ensures consistent behavior across similar edge cases
+
+**Behavioral Expectations Framework:**
+```python
+@dataclass
+class EdgeCaseBehaviorExpectation:
+    case_type: EdgeCaseType
+    max_confidence: float                    # Confidence ceiling for edge cases
+    max_alternatives: int                    # Expected number of alternatives
+    required_reasoning_keywords: List[str]   # Must appear in reasoning
+    analysis_should_contain: List[str]       # Expected content in analysis
+    should_not_contain: List[str]           # Inappropriate confident language
+```
+
+**Success Criteria**: 80%+ behavioral validation (testing that edge cases behave appropriately, not that they perform normally)
 
 ## Current Development Status and Next Phase
 

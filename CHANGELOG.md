@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Cadence-Specific Confidence Scoring**: Implemented theoretically sound confidence values for different cadence types (authentic: 0.90, plagal: 0.65, deceptive: 0.70, half: 0.50)
 - **Strong Pattern Detection**: Added recognition system for classic functional progressions (I-vi-IV-V, ii-V-I, circle progressions) with appropriate high confidence scores
 - **Evidence-Based Calibration Framework**: Refined evidence strength values and weights based on music theory expert analysis
+- **Edge Case Behavioral Testing Framework**: New comprehensive testing system for validating appropriate graceful degradation (tests/test_edge_case_behavior.py)
+- **EdgeCaseType Enum and Behavioral Expectations**: Systematic categorization of edge cases with expected behavior patterns
 - **Music Theory Validator Agent**: Added specialized agent for music theory accuracy validation (currently in development)
 - **Comprehensive Documentation**: Added detailed confidence calibration implementation guide and technical documentation
 
@@ -35,6 +37,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Pattern Detection**: Implemented extensible system for recognizing functional progression patterns
 - **Evidence Collection**: Refined evidence strength calculation for different analytical contexts
 - **Test Framework**: Improved validation against 427 sophisticated multi-layer test cases
+- **Edge Case Testing**: New behavioral testing framework with EdgeCaseType enum and structured expectations
+- **Graceful Degradation**: System now handles single chords, static harmony, and pathological input appropriately
 
 ### Music Theory Validation
 - **C-F-C (Plagal Cadence)**: 0.712 confidence (Expected: 0.60 ±0.15) ✅ Within tolerance

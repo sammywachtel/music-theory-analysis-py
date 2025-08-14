@@ -145,6 +145,18 @@ def _collect_functional_evidence(self, chords, functional_result):
 - **Modal Characteristics**: 20% → 56% success rate (+36 percentage points)
 - **Functional Harmony**: 0% → 50%+ success rate (+50 percentage points)
 - **Code Coverage**: 58% → 60% (additional code paths tested)
+- **Edge Case Behavioral Testing**: New 80%+ success rate for appropriate graceful degradation
+
+### Edge Case Behavioral Testing Framework
+**New Addition**: Comprehensive behavioral testing system that validates edge cases behave appropriately as edge cases rather than expecting normal performance.
+
+**Key Components:**
+- **tests/test_edge_case_behavior.py**: 311 lines of comprehensive behavioral validation
+- **EdgeCaseType categorization**: INSUFFICIENT_DATA, STATIC_HARMONY, PATHOLOGICAL_INPUT, CONTEXTUAL_DEPENDENCY
+- **EdgeCaseBehaviorExpectation**: Structured expectations for confidence ceilings, alternative counts, and reasoning requirements
+- **Graceful degradation validation**: Single chords (≤0.4 confidence), static harmony (≤0.3 confidence), pathological input (≤0.5 confidence)
+
+**Philosophy**: Edge cases should demonstrate appropriate uncertainty and provide educational explanations rather than failing entirely or claiming false confidence.
 
 ### Music Theory Compliance
 - **Plagal cadences** now scored appropriately lower (0.65-0.70 vs 0.90)
