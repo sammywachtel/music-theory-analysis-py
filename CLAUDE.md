@@ -1,10 +1,10 @@
-# CLAUDE.md - Music Theory Analysis Python Library
+# CLAUDE.md - Harmonic Analysis Python Library
 
-This file provides guidance to Claude Code when working with this music theory analysis library.
+This file provides guidance to Claude Code when working with this harmonic analysis library.
 
 ## Project Overview
 
-This is a comprehensive music theory analysis library ported from TypeScript, designed to provide sophisticated harmonic analysis with multiple interpretations. The library excels at modal analysis while handling functional harmony, chromatic harmony, and complex theoretical relationships.
+This is a comprehensive harmonic analysis library ported from TypeScript, designed to provide sophisticated harmonic and modal analysis with multiple interpretations. The library excels at modal analysis while handling functional harmony, chromatic harmony, and complex theoretical relationships.
 
 **Status: Production Ready with Calibration Opportunities**
 - ✅ 96% behavioral parity with TypeScript implementation achieved
@@ -15,7 +15,7 @@ This is a comprehensive music theory analysis library ported from TypeScript, de
 ## Library Purpose and Intended Usage
 
 ### Primary Use Case
-This library serves as the **backend analysis engine** for a comprehensive music theory application. It analyzes chord progressions to provide:
+This library serves as the **backend analysis engine** for a comprehensive harmonic analysis application. It analyzes chord progressions to provide:
 
 1. **Multiple Analytical Perspectives**: Functional harmony, modal analysis, and chromatic harmony
 2. **Educational Context**: Explanations suitable for different pedagogical levels (beginner/intermediate/advanced)
@@ -24,10 +24,10 @@ This library serves as the **backend analysis engine** for a comprehensive music
 
 ### Integration Pattern
 The library is designed to be consumed by:
-- **FastAPI Backend**: REST endpoints for chord progression analysis
-- **Frontend Applications**: React/TypeScript music theory tools
-- **Educational Software**: Music theory learning applications
-- **Analysis Tools**: Standalone music analysis utilities
+- **FastAPI Backend**: REST endpoints for harmonic progression analysis
+- **Frontend Applications**: React/TypeScript harmonic analysis tools
+- **Educational Software**: Music theory and harmonic analysis learning applications
+- **Analysis Tools**: Standalone harmonic analysis utilities
 
 ### Core API Usage Examples
 
