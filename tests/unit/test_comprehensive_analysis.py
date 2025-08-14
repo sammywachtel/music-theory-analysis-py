@@ -2,8 +2,6 @@
 Unit tests for comprehensive analysis engine.
 """
 
-import asyncio
-
 import pytest
 
 from music_theory_analysis.comprehensive_analysis import (

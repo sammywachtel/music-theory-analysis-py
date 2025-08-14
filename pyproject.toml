@@ -46,6 +46,7 @@ dependencies = [
 dev = [
     "pytest>=7.0",
     "pytest-cov",
+    "pytest-asyncio>=0.21",
     "black",
     "flake8",
     "mypy",
@@ -55,6 +56,7 @@ test = [
     "pytest>=7.0",
     "pytest-cov",
     "pytest-xdist",
+    "pytest-asyncio>=0.21",
 ]
 
 [project.urls]
@@ -86,6 +88,7 @@ markers = [
     "modal: Modal analysis tests",
     "chromatic: Chromatic analysis tests",
     "slow: Slow running tests",
+    "asyncio: Mark a test as an asyncio test",
 ]
 
 [tool.black]
@@ -105,6 +108,20 @@ extend-exclude = '''
   | dist
 )/
 '''
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
+exclude = [
+  ".git",
+  ".venv",
+  "build",
+  "dist",
+  "htmlcov",
+]
+per-file-ignores = [
+  "tests/*: E501",
+]
 
 [tool.mypy]
 python_version = "3.9"

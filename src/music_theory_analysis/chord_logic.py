@@ -4,9 +4,9 @@ Chord parsing and logic for music theory analysis.
 
 import re
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
-from .scales import NOTE_TO_PITCH_CLASS, PITCH_CLASS_NAMES
+from .scales import NOTE_TO_PITCH_CLASS
 from .types import ChordFunction
 
 
@@ -188,7 +188,7 @@ def find_chord_matches(chord_symbols: List[str]) -> List[ChordMatch]:
         try:
             match = parser.parse_chord(chord_symbol)
             matches.append(match)
-        except ValueError as e:
+        except ValueError:
             # For now, create a basic match for unparseable chords
             matches.append(
                 ChordMatch(
