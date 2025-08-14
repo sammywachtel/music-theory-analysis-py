@@ -246,7 +246,7 @@ The test suite validates **multiple analytical perspectives simultaneously**:
 ```python
 class EdgeCaseType(Enum):
     INSUFFICIENT_DATA = "insufficient_data"      # Single chord, empty
-    AMBIGUOUS_HARMONY = "ambiguous_harmony"      # Multiple valid interpretations  
+    AMBIGUOUS_HARMONY = "ambiguous_harmony"      # Multiple valid interpretations
     PATHOLOGICAL_INPUT = "pathological_input"    # Invalid or nonsensical
     CONTEXTUAL_DEPENDENCY = "contextual_dependency"  # Needs more context
     STATIC_HARMONY = "static_harmony"            # No harmonic motion
@@ -254,7 +254,7 @@ class EdgeCaseType(Enum):
 
 **Behavioral Expectations:**
 - **Single Chords**: ≤0.4 confidence, acknowledge limitations in reasoning
-- **Static Harmony**: ≤0.3 confidence, mention repetition/static nature  
+- **Static Harmony**: ≤0.3 confidence, mention repetition/static nature
 - **Pathological Input**: ≤0.5 confidence, acknowledge unusual nature
 - **Contextual Dependency**: ≤0.6 confidence, acknowledge ambiguity
 
