@@ -8,9 +8,9 @@ dynamic = ["version"]
 description = "Comprehensive harmonic and modal analysis engine for music theory"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 authors = [
-    {name = "Sam Wachtel", email = "sammywachtel@gmail.com"},
+    { name = "Sam Wachtel", email = "sammywachtel@gmail.com" },
 ]
 keywords = [
     "music",
@@ -28,9 +28,6 @@ classifiers = [
     "Intended Audience :: Education",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -113,14 +110,14 @@ extend-exclude = '''
 max-line-length = 88
 extend-ignore = ["E203", "W503"]
 exclude = [
-  ".git",
-  ".venv",
-  "build",
-  "dist",
-  "htmlcov",
+    ".git",
+    ".venv",
+    "build",
+    "dist",
+    "htmlcov",
 ]
 per-file-ignores = [
-  "tests/*: E501",
+    "tests/*: E501",
 ]
 
 [tool.mypy]

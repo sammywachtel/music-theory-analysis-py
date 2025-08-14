@@ -301,7 +301,8 @@ class ChordParser:
 
         # Adjust confidence for partial chords (2-note combinations)
         if note_count == 2 and total_template_notes == 2:
-            # Use template confidence for exact matches of partial chords (like majorPartial)
+            # Use template confidence for exact matches of partial chords
+            # (like majorPartial)
             confidence = (
                 (
                     template.confidence
@@ -350,62 +351,114 @@ class ChordParser:
 
         if chord_type == "sus4Partial" and len(intervals) == 2:
             missing_notes = [NOTE_NAMES[(root_pitch + 7) % 12]]  # Missing 5th
-            completion_suggestion = f"{root_name}-{NOTE_NAMES[(root_pitch + 5) % 12]}-{NOTE_NAMES[(root_pitch + 7) % 12]}"
-            pedagogical_note = "Suspended 4th chord - the 4th creates tension that typically resolves down to the 3rd"
+            completion_suggestion = (
+                f"{root_name}-{NOTE_NAMES[(root_pitch + 5) % 12]}-"
+                f"{NOTE_NAMES[(root_pitch + 7) % 12]}"
+            )
+            pedagogical_note = (
+                "Suspended 4th chord - the 4th creates tension that "
+                "typically resolves down to the 3rd"
+            )
 
         elif chord_type == "sus2Partial" and len(intervals) == 2:
             missing_notes = [NOTE_NAMES[(root_pitch + 7) % 12]]  # Missing 5th
-            completion_suggestion = f"{root_name}-{NOTE_NAMES[(root_pitch + 2) % 12]}-{NOTE_NAMES[(root_pitch + 7) % 12]}"
+            completion_suggestion = (
+                f"{root_name}-{NOTE_NAMES[(root_pitch + 2) % 12]}-"
+                f"{NOTE_NAMES[(root_pitch + 7) % 12]}"
+            )
             pedagogical_note = "Suspended 2nd chord - creates an open, unresolved sound"
 
         elif chord_type == "majorAdd4":
-            pedagogical_note = "Major triad with added 4th - retains major 3rd while adding 4th degree tension"
+            pedagogical_note = (
+                "Major triad with added 4th - retains major 3rd while "
+                "adding 4th degree tension"
+            )
 
         elif chord_type == "minorAdd4":
-            pedagogical_note = "Minor chord with added 4th - retains minor 3rd while adding upper tension. Common in folk and contemporary styles."
+            pedagogical_note = (
+                "Minor chord with added 4th - retains minor 3rd while "
+                "adding upper tension. Common in folk and contemporary styles."
+            )
 
         elif chord_type == "majorPartial":
             missing_notes = [NOTE_NAMES[(root_pitch + 7) % 12]]  # Missing 5th
-            completion_suggestion = f"{root_name}-{NOTE_NAMES[(root_pitch + 4) % 12]}-{NOTE_NAMES[(root_pitch + 7) % 12]}"
-            pedagogical_note = "Major triad without 5th - emphasizes the major 3rd character. Often used in tight voicings."
+            completion_suggestion = (
+                f"{root_name}-{NOTE_NAMES[(root_pitch + 4) % 12]}-"
+                f"{NOTE_NAMES[(root_pitch + 7) % 12]}"
+            )
+            pedagogical_note = (
+                "Major triad without 5th - emphasizes the major 3rd "
+                "character. Often used in tight voicings."
+            )
 
         elif chord_type == "minorPartial":
             missing_notes = [NOTE_NAMES[(root_pitch + 7) % 12]]  # Missing 5th
-            completion_suggestion = f"{root_name}-{NOTE_NAMES[(root_pitch + 3) % 12]}-{NOTE_NAMES[(root_pitch + 7) % 12]}"
-            pedagogical_note = "Minor triad without 5th - emphasizes the minor 3rd character. Creates a more focused harmonic color."
+            completion_suggestion = (
+                f"{root_name}-{NOTE_NAMES[(root_pitch + 3) % 12]}-"
+                f"{NOTE_NAMES[(root_pitch + 7) % 12]}"
+            )
+            pedagogical_note = (
+                "Minor triad without 5th - emphasizes the minor 3rd "
+                "character. Creates a more focused harmonic color."
+            )
 
         elif chord_type == "fifthPartial":
             missing_notes = [
                 NOTE_NAMES[(root_pitch + 3) % 12],
                 NOTE_NAMES[(root_pitch + 4) % 12],
             ]
-            completion_suggestion = f"{root_name}-{NOTE_NAMES[(root_pitch + 4) % 12]}-{NOTE_NAMES[(root_pitch + 7) % 12]} (major) or {root_name}-{NOTE_NAMES[(root_pitch + 3) % 12]}-{NOTE_NAMES[(root_pitch + 7) % 12]} (minor)"
-            pedagogical_note = "Power chord - perfect 5th interval creates strong, neutral harmony. Common in rock and metal music."
+            completion_suggestion = (
+                f"{root_name}-{NOTE_NAMES[(root_pitch + 4) % 12]}-"
+                f"{NOTE_NAMES[(root_pitch + 7) % 12]} (major) or "
+                f"{root_name}-{NOTE_NAMES[(root_pitch + 3) % 12]}-"
+                f"{NOTE_NAMES[(root_pitch + 7) % 12]} (minor)"
+            )
+            pedagogical_note = (
+                "Power chord - perfect 5th interval creates strong, "
+                "neutral harmony. Common in rock and metal music."
+            )
 
         elif chord_type in ["dom7NoFifth", "min7NoFifth", "maj7NoFifth"]:
             missing_notes = [NOTE_NAMES[(root_pitch + 7) % 12]]  # Missing 5th
             completion_suggestion = (
                 f"Add {NOTE_NAMES[(root_pitch + 7) % 12]} to complete the seventh chord"
             )
-            pedagogical_note = "Seventh chord without 5th - emphasizes the essential harmonic function (root, 3rd, 7th) while saving space in dense arrangements."
+            pedagogical_note = (
+                "Seventh chord without 5th - emphasizes the essential "
+                "harmonic function (root, 3rd, 7th) while saving space "
+                "in dense arrangements."
+            )
 
         elif chord_type in ["sus2Add7", "sus4Add7"]:
             missing_notes = [NOTE_NAMES[(root_pitch + 7) % 12]]  # Missing 5th
             completion_suggestion = (
                 f"Add {NOTE_NAMES[(root_pitch + 7) % 12]} for fuller voicing"
             )
-            pedagogical_note = "Suspended chord with 7th - combines suspension tension with seventh harmony. Creates sophisticated, unresolved sound."
+            pedagogical_note = (
+                "Suspended chord with 7th - combines suspension tension "
+                "with seventh harmony. Creates sophisticated, unresolved sound."
+            )
 
         # Special handling for 3-note combinations
         if note_count == 3 and 4 in intervals and 5 in intervals:
             if chord_type == "sus4Partial":
                 missing_notes = [NOTE_NAMES[(root_pitch + 7) % 12]]
-                completion_suggestion = f"{root_name}-{NOTE_NAMES[(root_pitch + 5) % 12]}-{NOTE_NAMES[(root_pitch + 7) % 12]}"
-                pedagogical_note = "Partial sus4 chord - the 4th creates harmonic tension typically resolved to the 3rd. Missing 5th is common in contemporary voicings."
+                completion_suggestion = (
+                    f"{root_name}-{NOTE_NAMES[(root_pitch + 5) % 12]}-"
+                    f"{NOTE_NAMES[(root_pitch + 7) % 12]}"
+                )
+                pedagogical_note = (
+                    "Partial sus4 chord - the 4th creates harmonic tension "
+                    "typically resolved to the 3rd. Missing 5th is common "
+                    "in contemporary voicings."
+                )
 
         elif note_count == 3 and 3 in intervals and 5 in intervals:
             if chord_type == "minorAdd4":
-                pedagogical_note = "Minor chord with added 4th - retains minor 3rd while adding upper tension. Common in folk and contemporary styles."
+                pedagogical_note = (
+                    "Minor chord with added 4th - retains minor 3rd while "
+                    "adding upper tension. Common in folk and contemporary styles."
+                )
 
         return is_partial, missing_notes, completion_suggestion, pedagogical_note
 
@@ -556,8 +609,15 @@ class ChordParser:
                         bass_note=root_pitch,
                         is_partial=True,
                         missing_notes=[NOTE_NAMES[(root_pitch + 7) % 12]],
-                        completion_suggestion=f"{root_name}-{NOTE_NAMES[(root_pitch + 5) % 12]}-{NOTE_NAMES[(root_pitch + 7) % 12]}",
-                        pedagogical_note="Partial sus4 chord - the 4th creates harmonic tension typically resolved to the 3rd. Missing 5th is common in contemporary voicings.",
+                        completion_suggestion=(
+                            f"{root_name}-{NOTE_NAMES[(root_pitch + 5) % 12]}-"
+                            f"{NOTE_NAMES[(root_pitch + 7) % 12]}"
+                        ),
+                        pedagogical_note=(
+                            "Partial sus4 chord - the 4th creates harmonic tension "
+                            "typically resolved to the 3rd. Missing 5th is common "
+                            "in contemporary voicings."
+                        ),
                     )
                 )
 
@@ -573,7 +633,11 @@ class ChordParser:
                         confidence=0.85,
                         inversion="",
                         bass_note=root_pitch,
-                        pedagogical_note="Minor chord with added 4th - retains minor 3rd while adding upper tension. Common in folk and contemporary styles.",
+                        pedagogical_note=(
+                            "Minor chord with added 4th - retains minor 3rd while "
+                            "adding upper tension. Common in folk and "
+                            "contemporary styles."
+                        ),
                     )
                 )
 

@@ -8,8 +8,8 @@ generation, chromatic chord detection, and figured bass notation.
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from .chord_logic import ChordMatch, determine_chord_function, find_chord_matches
-from .scales import NOTE_TO_PITCH_CLASS, PITCH_CLASS_NAMES
+from .chord_logic import ChordMatch
+from .scales import NOTE_TO_PITCH_CLASS
 from .types import ChordFunction, ChromaticType, ProgressionType
 
 # Enhanced Roman numeral templates with chromatic chord support
@@ -17,7 +17,8 @@ FUNCTIONAL_ROMAN_NUMERALS = {
     "major": {
         "diatonic": ["I", "ii", "iii", "IV", "V", "vi", "vii°"],
         "chromatic": {
-            # Secondary dominants (used as fallback for non-dominant quality chords at these intervals)
+            # Secondary dominants (used as fallback for non-dominant quality
+            # chords at these intervals)
             2: "V/V",  # D7 - Dominant of V (very common)
             4: "V/vi",  # E7 - Dominant of vi
             9: "V/ii",  # A7 - Dominant of ii
@@ -137,7 +138,8 @@ class FunctionalAnalysisResult:
 
 
 class FunctionalHarmonyAnalyzer:
-    """Main functional harmony analyzer class with comprehensive Roman numeral generation."""
+    """Main functional harmony analyzer class with comprehensive Roman
+    numeral generation."""
 
     def __init__(self):
         self.last_analysis_ambiguity: List[str] = []
@@ -210,7 +212,10 @@ class FunctionalHarmonyAnalyzer:
             parsed = self._parse_key(parent_key)
             if parsed:
                 return {
-                    "key_center": f"{parsed['tonic']} {'Minor' if parsed['is_minor'] else 'Major'}",
+                    "key_center": (
+                        f"{parsed['tonic']} "
+                        f"{'Minor' if parsed['is_minor'] else 'Major'}"
+                    ),
                     "key_signature": self._get_key_signature(
                         parsed["tonic"], parsed["is_minor"]
                     ),
@@ -219,9 +224,8 @@ class FunctionalHarmonyAnalyzer:
                     "is_minor": parsed["is_minor"],
                 }
 
-        # Analyze first and last chords for tonal center
+        # Analyze first chord for tonal center
         first_chord = self._parse_chord_symbol(chord_symbols[0])
-        last_chord = self._parse_chord_symbol(chord_symbols[-1])
 
         # Assume first/last chord suggests key (simple heuristic for now)
         suggested_root = first_chord["root"] if first_chord else 0
@@ -274,7 +278,7 @@ class FunctionalHarmonyAnalyzer:
                 "chord_name": symbol,
                 "bass_note": chord_match.bass_pitch,
             }
-        except:
+        except Exception:
             # Fallback parsing
             if symbol and symbol[0] in NOTE_TO_PITCH_CLASS:
                 return {
@@ -460,7 +464,8 @@ class FunctionalHarmonyAnalyzer:
         if actual == "suspended" and expected in ["major", "minor"]:
             return True
 
-        # Dominant 7th is NOT diatonic in most contexts (key indicator of secondary dominants)
+        # Dominant 7th is NOT diatonic in most contexts
+        # (key indicator of secondary dominants)
         if actual == "dominant7":
             return False
 
@@ -505,7 +510,8 @@ class FunctionalHarmonyAnalyzer:
 
         # Handle chromatic chords with comprehensive analysis
         if is_chromatic:
-            # Check if this is actually a dominant quality chord (for secondary dominants)
+            # Check if this is actually a dominant quality chord
+            # (for secondary dominants)
             actual_quality = self._parse_chord_quality(chord_name)
             is_dominant_quality = actual_quality in ["dominant7", "major"]
 
@@ -639,7 +645,8 @@ class FunctionalHarmonyAnalyzer:
         return f"?{interval_from_key}"
 
     def _is_common_borrowed_chord(self, interval_from_key: int, is_minor: bool) -> bool:
-        """Check if this is a common borrowed chord that should not be analyzed as secondary dominant."""
+        """Check if this is a common borrowed chord that should not be
+        analyzed as secondary dominant."""
         if is_minor:
             # Common borrowed chords from parallel major in minor keys
             return interval_from_key in [2, 4, 7, 9, 11]  # II, IV, V, VI, vii°
@@ -690,14 +697,16 @@ class FunctionalHarmonyAnalyzer:
     ) -> Dict[str, Any]:
         """Analyze chord inversion and generate precise figured bass notation."""
         # Simplified inversion analysis for now
-        # In a full implementation, you'd analyze the bass note relative to the chord tones
+        # In a full implementation, you'd analyze the bass note relative to
+        # the chord tones
 
         if (
             chord_info.get("bass_note") is not None
             and chord_info["bass_note"] != chord_info["root"]
         ):
             # There's a bass note different from root - some kind of inversion
-            # This is a simplified approach - full implementation would analyze specific intervals
+            # This is a simplified approach - full implementation would analyze
+            # specific intervals
             return {"inversion": 1, "figured_bass": "⁶"}
 
         return {"inversion": 0, "figured_bass": ""}
@@ -848,7 +857,10 @@ class FunctionalHarmonyAnalyzer:
         """Generate explanation for chromatic element."""
         if chord.chromatic_type == ChromaticType.SECONDARY_DOMINANT:
             if resolution:
-                return f"Secondary dominant {chord.roman_numeral} resolves to {resolution.roman_numeral}"
+                return (
+                    f"Secondary dominant {chord.roman_numeral} resolves to "
+                    f"{resolution.roman_numeral}"
+                )
             else:
                 return f"Secondary dominant {chord.roman_numeral} (unresolved)"
         elif chord.chromatic_type == ChromaticType.BORROWED_CHORD:

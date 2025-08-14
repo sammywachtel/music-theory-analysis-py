@@ -9,8 +9,6 @@ Tests comprehensive multi-perspective analysis including:
 - Performance and caching
 """
 
-import asyncio
-
 import pytest
 
 from harmonic_analysis import (

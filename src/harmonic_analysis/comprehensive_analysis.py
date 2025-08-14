@@ -2,16 +2,11 @@
 Comprehensive analysis engine coordinating functional, modal, and chromatic analysis.
 """
 
-import asyncio
 from dataclasses import dataclass
 from typing import List, Literal, Optional
 
 from .chord_logic import parse_chord_progression
-from .functional_harmony import (
-    ChromaticElement,
-    FunctionalAnalysisResult,
-    FunctionalHarmonyAnalyzer,
-)
+from .functional_harmony import FunctionalAnalysisResult, FunctionalHarmonyAnalyzer
 from .modal_analysis import EnhancedModalAnalyzer, ModalAnalysisResult
 from .types import AnalysisOptions, MultipleInterpretationResult, UserInputContext
 
@@ -195,7 +190,9 @@ class ComprehensiveAnalysisEngine:
                 )
             ],
             reasoning=comprehensive_result.explanation,
-            theoretical_basis=f"{comprehensive_result.primary_approach} analysis approach",
+            theoretical_basis=(
+                f"{comprehensive_result.primary_approach} analysis approach"
+            ),
         )
 
         return MultipleInterpretationResult(
@@ -319,10 +316,19 @@ class ComprehensiveAnalysisEngine:
         modal_romans = " - ".join(enhanced_modal_analysis.roman_numerals)
 
         return (
-            f"Functional perspective (in {functional_analysis.key_center}): {functional_romans}. "
-            f"Modal perspective ({enhanced_modal_analysis.mode_name}): {modal_romans}. "
-            f"The modal analysis better explains the structural emphasis on "
-            f"{enhanced_modal_analysis.detected_tonic_center} and characteristic modal relationships."
+            (
+                f"Functional perspective (in {functional_analysis.key_center}): "
+                f"{functional_romans}. "
+            )
+            + (
+                f"Modal perspective ({enhanced_modal_analysis.mode_name}): "
+                f"{modal_romans}. "
+            )
+            + "The modal analysis better explains the structural emphasis on "
+            + (
+                f"{enhanced_modal_analysis.detected_tonic_center} and "
+                "characteristic modal relationships."
+            )
         )
 
     def _compare_analytical_approaches(
@@ -332,7 +338,10 @@ class ComprehensiveAnalysisEngine:
         functional_romans = " - ".join(
             chord.roman_numeral for chord in functional_analysis.chords
         )
-        return f"Functional analysis shows: {functional_romans}. Modal analysis provides alternative perspective on scale relationships."
+        return (
+            f"Functional analysis shows: {functional_romans}. Modal analysis "
+            "provides alternative perspective on scale relationships."
+        )
 
     def _explain_when_to_use_enhanced_modal(
         self, enhanced_modal_analysis: ModalAnalysisResult
@@ -349,8 +358,10 @@ class ComprehensiveAnalysisEngine:
 
         if has_strong_structural and has_cadential:
             return (
-                f"Modal analysis is highly recommended - the progression shows strong structural "
-                f"emphasis on {enhanced_modal_analysis.detected_tonic_center} with characteristic modal cadences"
+                "Modal analysis is highly recommended - the progression shows "
+                f"strong structural emphasis on "
+                f"{enhanced_modal_analysis.detected_tonic_center} with "
+                "characteristic modal cadences"
             )
         elif has_strong_structural:
             return (
@@ -370,11 +381,20 @@ class ComprehensiveAnalysisEngine:
         )
 
         if has_strong_functional and not has_modal_chords:
-            return "Modal analysis is less applicable - this progression works primarily through functional harmony"
+            return (
+                "Modal analysis is less applicable - this progression works "
+                "primarily through functional harmony"
+            )
         elif has_modal_chords:
-            return "Modal analysis helps explain the chromatic chords and their relationship to the underlying scale"
+            return (
+                "Modal analysis helps explain the chromatic chords and their "
+                "relationship to the underlying scale"
+            )
         else:
-            return "Modal analysis provides alternative perspective focusing on scale relationships"
+            return (
+                "Modal analysis provides alternative perspective focusing on "
+                "scale relationships"
+            )
 
     def _analyze_chromatic_elements(
         self, functional_analysis: FunctionalAnalysisResult
@@ -409,7 +429,11 @@ class ComprehensiveAnalysisEngine:
                             "from": element.chord.roman_numeral,
                             "to": element.resolution.roman_numeral,
                             "type": "strong",
-                            "explanation": f"Secondary dominant resolution: {element.chord.roman_numeral} → {element.resolution.roman_numeral}",
+                            "explanation": (
+                                f"Secondary dominant resolution: "
+                                f"{element.chord.roman_numeral} → "
+                                f"{element.resolution.roman_numeral}"
+                            ),
                         }
                     )
 
@@ -490,7 +514,10 @@ class ComprehensiveAnalysisEngine:
                 )
 
             if chromatic_analysis and chromatic_analysis.secondary_dominants:
-                explanation += f". Contains {len(chromatic_analysis.secondary_dominants)} secondary dominant(s)"
+                explanation += (
+                    f". Contains {len(chromatic_analysis.secondary_dominants)} "
+                    "secondary dominant(s)"
+                )
 
         elif primary_approach == "modal":
             characteristics = (
@@ -505,7 +532,10 @@ class ComprehensiveAnalysisEngine:
             sec_dom_count = (
                 len(chromatic_analysis.secondary_dominants) if chromatic_analysis else 0
             )
-            explanation = f"Primary analysis: Chromatic harmony with {sec_dom_count} secondary dominant(s)"
+            explanation = (
+                f"Primary analysis: Chromatic harmony with {sec_dom_count} "
+                "secondary dominant(s)"
+            )
             explanation += f". Functional foundation: {functional_analysis.explanation}"
 
         return explanation
@@ -518,13 +548,26 @@ class ComprehensiveAnalysisEngine:
         """Create pedagogical explanation of analytical approach."""
 
         if primary_approach == "functional":
-            return "This progression is best understood through functional harmony - how chords relate through tonic, predominant, and dominant functions."
+            return (
+                "This progression is best understood through functional harmony - "
+                "how chords relate through tonic, predominant, and dominant functions."
+            )
         elif primary_approach == "modal":
-            return "This progression emphasizes modal characteristics that are better understood through scale relationships than traditional functional harmony."
+            return (
+                "This progression emphasizes modal characteristics that are "
+                "better understood through scale relationships than traditional "
+                "functional harmony."
+            )
         elif primary_approach == "chromatic":
-            return "This progression uses chromatic harmony (non-diatonic chords) that requires understanding secondary dominants and borrowed chords."
+            return (
+                "This progression uses chromatic harmony (non-diatonic chords) "
+                "that requires understanding secondary dominants and borrowed chords."
+            )
         else:
-            return "This progression can be analyzed from multiple theoretical perspectives."
+            return (
+                "This progression can be analyzed from multiple theoretical "
+                "perspectives."
+            )
 
     def _parse_chord_progression(self, input_str: str) -> List[str]:
         """Parse chord progression string into individual chord symbols."""

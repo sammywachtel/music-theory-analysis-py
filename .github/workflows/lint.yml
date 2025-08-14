@@ -35,48 +35,45 @@ jobs:
           # Install linting tools
           pip install black isort flake8 mypy
 
-      - name: Run Black formatter
+      - name: Validate Black formatting
         run: |
-          echo "🎨 Running Black formatter..."
-          black --check --diff . || (black . && echo "✅ Code formatted with Black")
+          echo "🎨 Validating Black formatting..."
+          black --check --diff . || {
+            echo "❌ Code formatting issues found!"
+            echo "💡 Run locally: black ."
+            echo "💡 Or run: pre-commit run black --all-files"
+            exit 1
+          }
 
-      - name: Run isort import sorter
+      - name: Validate isort import sorting
         run: |
-          echo "📚 Running isort..."
-          isort --check --diff . || (isort . && echo "✅ Imports sorted with isort")
+          echo "📚 Validating import sorting..."
+          isort --check --diff . || {
+            echo "❌ Import sorting issues found!"
+            echo "💡 Run locally: isort ."
+            echo "💡 Or run: pre-commit run isort --all-files"
+            exit 1
+          }
 
       - name: Run Flake8 linter
         run: |
-          echo "🔍 Running Flake8..."
-          flake8 . --max-line-length=88 --extend-ignore=E203,W503
+          echo "🔍 Running Flake8 linter..."
+          flake8 . --max-line-length=88 --extend-ignore=E203,W503 || {
+            echo "❌ Linting issues found!"
+            echo "💡 Fix issues locally and commit changes"
+            echo "💡 Or run: pre-commit run flake8 --all-files"
+            exit 1
+          }
 
       - name: Run MyPy type checking
         run: |
           echo "🔍 Running MyPy type checking..."
-          mypy . --ignore-missing-imports || echo "⚠️ MyPy found type issues"
-
-      - name: Commit and push formatting fixes
-        if: github.event_name == 'pull_request'
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-
-          if ! git diff --quiet; then
-            echo "📝 Auto-fixing formatting issues and committing changes"
-            git add .
-            git commit -m "Auto-fix Python formatting
-
-            Automatically applied Black and isort fixes during PR workflow.
-
-            - Fixed code formatting with Black
-            - Sorted imports with isort
-            - No manual intervention required"
-
-            git push origin HEAD:${{ github.head_ref }}
-            echo "✅ Formatting fixes committed and pushed"
-          else
-            echo "✅ No formatting fixes needed"
-          fi
+          mypy src/ --ignore-missing-imports || {
+            echo "❌ Type checking issues found!"
+            echo "💡 Fix type issues locally and commit changes"
+            echo "💡 Or run: pre-commit run mypy-src --all-files"
+            exit 1
+          }
 
   test:
     name: Run Tests

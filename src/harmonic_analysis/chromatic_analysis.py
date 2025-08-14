@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional
 
-from .functional_harmony import ChromaticElement, FunctionalAnalysisResult
+from .functional_harmony import FunctionalAnalysisResult
 
 
 class ResolutionType(Enum):
@@ -126,7 +126,11 @@ class ChromaticAnalyzer:
                             from_chord=element.chord.roman_numeral,
                             to_chord=element.resolution.roman_numeral,
                             type=ResolutionType.STRONG,
-                            explanation=f"Secondary dominant resolution: {element.chord.roman_numeral} → {element.resolution.roman_numeral}",
+                            explanation=(
+                                f"Secondary dominant resolution: "
+                                f"{element.chord.roman_numeral} → "
+                                f"{element.resolution.roman_numeral}"
+                            ),
                         )
                     )
 
@@ -183,7 +187,10 @@ class ChromaticAnalyzer:
                 # Check if current target is the next secondary dominant
                 if dom.target in next_dom.roman_numeral:
                     chains.append(
-                        f"Secondary dominant chain: {dom.roman_numeral} → {next_dom.roman_numeral}"
+                        (
+                            f"Secondary dominant chain: {dom.roman_numeral} → "
+                            f"{next_dom.roman_numeral}"
+                        )
                     )
 
         return chains
@@ -208,7 +215,10 @@ class ChromaticAnalyzer:
         # Neapolitan sixth chord pattern
         if any("bII" in rn for rn in roman_numerals):
             patterns.append(
-                "Contains Neapolitan chord (bII⁶) - characteristic of dramatic harmonic color"
+                (
+                    "Contains Neapolitan chord (bII⁶) - characteristic of "
+                    "dramatic harmonic color"
+                )
             )
 
         # Modal interchange patterns
@@ -297,9 +307,15 @@ class ChromaticAnalyzer:
         if chromatic_analysis.secondary_dominants:
             sec_dom_count = len(chromatic_analysis.secondary_dominants)
             explanations.append(
-                f"This progression contains {sec_dom_count} secondary dominant{'s' if sec_dom_count > 1 else ''}, "
-                f"which temporarily tonicize other keys within the progression. "
-                f"Secondary dominants create forward harmonic motion and add chromatic color."
+                (
+                    f"This progression contains {sec_dom_count} secondary "
+                    f"dominant{'s' if sec_dom_count > 1 else ''}, "
+                )
+                + "which temporarily tonicize other keys within the progression. "
+                + (
+                    "Secondary dominants create forward harmonic motion and "
+                    "add chromatic color."
+                )
             )
 
             # Mention specific secondary dominants
@@ -310,8 +326,12 @@ class ChromaticAnalyzer:
         if chromatic_analysis.borrowed_chords:
             borrowed_count = len(chromatic_analysis.borrowed_chords)
             explanations.append(
-                f"The progression features {borrowed_count} borrowed chord{'s' if borrowed_count > 1 else ''} "
-                f"through modal interchange, borrowing chords from the parallel mode to add harmonic richness."
+                (
+                    f"The progression features {borrowed_count} borrowed "
+                    f"chord{'s' if borrowed_count > 1 else ''} "
+                    "through modal interchange, borrowing chords from the "
+                    "parallel mode to add harmonic richness."
+                )
             )
 
             for borrowed in chromatic_analysis.borrowed_chords:
@@ -321,7 +341,10 @@ class ChromaticAnalyzer:
         if chromatic_analysis.chromatic_mediants:
             explanations.append(
                 "The progression includes chromatic mediant relationships, "
-                "which create dramatic harmonic shifts through non-functional chord progressions."
+                + (
+                    "which create dramatic harmonic shifts through "
+                    "non-functional chord progressions."
+                )
             )
 
             for mediant in chromatic_analysis.chromatic_mediants:

@@ -319,7 +319,7 @@ class TestComprehensiveMultiLayerValidation:
 
         if not functional_analysis:
             if expected.detected:
-                raise AssertionError(f"Expected functional analysis but none found")
+                raise AssertionError("Expected functional analysis but none found")
             return
 
         # Check confidence within tolerance
@@ -359,7 +359,7 @@ class TestComprehensiveMultiLayerValidation:
 
         if not modal_analysis:
             if expected.detected:
-                raise AssertionError(f"Expected modal analysis but none found")
+                raise AssertionError("Expected modal analysis but none found")
             return
 
         # Check confidence within tolerance
@@ -477,7 +477,6 @@ class TestComprehensiveMultiLayerValidation:
         ), f"{test_case.id}: No analysis produced"
 
         category = test_case.category
-        chords = test_case.chords
 
         if category == "edge_single":
             # Single chord should have low confidence and acknowledge limitations

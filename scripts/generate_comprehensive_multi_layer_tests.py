@@ -173,7 +173,10 @@ class ComprehensiveMultiLayerGenerator:
         return self.test_cases
 
     def generate_modal_characteristic_tests(self):
-        """🎭 MODAL CHARACTERISTIC TESTS - Clear modal progressions with strong characteristics"""
+        """
+        🎭 MODAL CHARACTERISTIC TESTS - Clear modal progressions with strong
+        characteristics
+        """
         print("  🎭 Generating modal characteristic tests...")
 
         modes = [
@@ -198,7 +201,10 @@ class ComprehensiveMultiLayerGenerator:
                     # Test with parent key context (high confidence)
                     self.test_cases.append(
                         self.create_multi_layer_test(
-                            description=f'{root} {mode} - {" ".join(progression["chords"])} (with context)',
+                            description=(
+                                f'{root} {mode} - {", ".join(progression["chords"])} '
+                                "(with context)"
+                            ),
                             chords=progression["chords"],
                             parent_key=parent_key,
                             category="modal_characteristic",
@@ -214,7 +220,10 @@ class ComprehensiveMultiLayerGenerator:
                     # Test without parent key (lower confidence but still detectable)
                     self.test_cases.append(
                         self.create_multi_layer_test(
-                            description=f'{root} {mode} - {" ".join(progression["chords"])} (no context)',
+                            description=(
+                                f'{root} {mode} - {", ".join(progression["chords"])} '
+                                "(no context)"
+                            ),
                             chords=progression["chords"],
                             parent_key=None,
                             category="modal_contextless",
@@ -229,7 +238,10 @@ class ComprehensiveMultiLayerGenerator:
                     )
 
     def generate_functional_harmony_tests(self):
-        """🎵 FUNCTIONAL HARMONY TESTS - Classical functional progressions with strong cadences"""
+        """
+        🎵 FUNCTIONAL HARMONY TESTS - Classical functional progressions with
+        strong cadences
+        """
         print("  🎵 Generating functional harmony tests...")
 
         keys = [
@@ -283,7 +295,10 @@ class ComprehensiveMultiLayerGenerator:
                 )
 
     def generate_chromatic_analysis_tests(self):
-        """⚡ CHROMATIC ANALYSIS TESTS - Secondary dominants, borrowed chords, chromatic mediants"""
+        """
+        ⚡ CHROMATIC ANALYSIS TESTS - Secondary dominants, borrowed chords,
+        chromatic mediants
+        """
         print("  ⚡ Generating chromatic analysis tests...")
 
         # Secondary dominants
@@ -366,7 +381,10 @@ class ComprehensiveMultiLayerGenerator:
             )
 
     def generate_ambiguous_context_tests(self):
-        """🤔 AMBIGUOUS CONTEXT TESTS - Progressions that could be interpreted multiple ways"""
+        """
+        🤔 AMBIGUOUS CONTEXT TESTS - Progressions that could be interpreted
+        multiple ways
+        """
         print("  🤔 Generating ambiguous context tests...")
 
         ambiguous_progressions = [
@@ -454,7 +472,10 @@ class ComprehensiveMultiLayerGenerator:
             for context in progression["contexts"]:
                 self.test_cases.append(
                     self.create_multi_layer_test(
-                        description=f'{"-".join(progression["chords"])} {context["interpretation"]}',
+                        description=(
+                            f'{"-".join(progression["chords"])} '
+                            f'{context["interpretation"]}'
+                        ),
                         chords=progression["chords"],
                         parent_key=context["key"],
                         category="ambiguous",
@@ -1030,7 +1051,7 @@ class ComprehensiveMultiLayerGenerator:
             next_chord = chords[i + 1]
 
             # V-I authentic cadence (simplified)
-            if "7" in current and not "maj7" in current:
+            if "7" in current and "maj7" not in current:
                 cadences.append(
                     {
                         "type": "authentic",
@@ -1108,8 +1129,6 @@ class ComprehensiveMultiLayerGenerator:
         }
 
         # Check for modal patterns (simplified)
-        progression = " ".join(chords)
-
         # Mixolydian detection
         if self.contains_bVII_pattern(chords):
             result["detected"] = True
@@ -1149,7 +1168,10 @@ class ComprehensiveMultiLayerGenerator:
                     {
                         "chord": chords[i],
                         "target": chords[i + 1],
-                        "roman_numeral": f"V7/{self.chord_to_roman_numeral(chords[i + 1], parent_key)}",
+                        "roman_numeral": (
+                            "V7/"
+                            + self.chord_to_roman_numeral(chords[i + 1], parent_key)
+                        ),
                         "function": "tonicization",
                     }
                 )
@@ -1231,7 +1253,10 @@ class ComprehensiveMultiLayerGenerator:
                 "total_cases": len(self.test_cases),
                 "thresholds": self.thresholds,
                 "version": "multi-layer-v2.0-python",
-                "description": "Revolutionary multi-layer test cases with comprehensive analysis expectations",
+                "description": (
+                    "Revolutionary multi-layer test cases with comprehensive "
+                    "analysis expectations"
+                ),
                 "categories": self.get_category_breakdown(),
                 "confidence_distribution": self.get_confidence_distribution(),
             },
@@ -1352,7 +1377,10 @@ class ComprehensiveMultiLayerGenerator:
         for analysis_type in ["functional", "modal", "chromatic"]:
             dist = distribution[analysis_type]
             print(
-                f'  {analysis_type}: High({dist["high"]}) Medium({dist["medium"]}) Low({dist["low"]})'
+                (
+                    f'  {analysis_type}: High({dist["high"]}) '
+                    f'Medium({dist["medium"]}) Low({dist["low"]})'
+                )
             )
 
         print("\n🎉 MULTI-LAYER TEST REVOLUTION COMPLETE!")
@@ -1364,7 +1392,7 @@ def main():
     generator = ComprehensiveMultiLayerGenerator()
     test_cases = generator.generate_all_tests()
 
-    print(f"\n🎊 COMPREHENSIVE MULTI-LAYER TEST GENERATION COMPLETE!")
+    print("\n🎊 COMPREHENSIVE MULTI-LAYER TEST GENERATION COMPLETE!")
     print(f"📈 Generated {len(test_cases)} revolutionary test cases")
     print("🎯 All test cases include functional, modal, and chromatic expectations")
     print("🎚️ Confidence thresholds: functional(0.4), modal(0.6), chromatic(0.5)")

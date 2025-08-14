@@ -13,7 +13,7 @@ Key Improvements:
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional
 
 
 class EvidenceType(Enum):
@@ -328,7 +328,8 @@ class EnhancedModalAnalyzer:
         # Identify characteristics
         characteristics = self._identify_modal_characteristics(roman_numerals)
 
-        # Apply foil detection to reduce confidence for functional patterns masquerading as modal
+        # Apply foil detection to reduce confidence for functional patterns
+        # masquerading as modal
         final_confidence = confidence
         is_detected_as_foil = self._detect_foil_patterns(roman_numerals)
 
@@ -340,7 +341,8 @@ class EnhancedModalAnalyzer:
             # Special boost for clear Ionian pattern that isn't functional
             final_confidence = max(confidence, 0.75)
 
-        # CRITICAL FIX: Reduce confidence for ambiguous patterns without parent key context
+        # CRITICAL FIX: Reduce confidence for ambiguous patterns without
+        # parent key context
         if not was_parent_key_provided:
             # Without explicit parent key, modal identification lacks harmonic context
             final_confidence = min(
@@ -440,7 +442,10 @@ class EnhancedModalAnalyzer:
             evidence.append(
                 ModalEvidence(
                     type=EvidenceType.STRUCTURAL,
-                    description=f"Progression starts and ends on {chord_analyses[0].root}, suggesting {chord_analyses[0].root} as tonal center",
+                    description=(
+                        f"Progression starts and ends on {chord_analyses[0].root}, "
+                        f"suggesting {chord_analyses[0].root} as tonal center"
+                    ),
                     strength=0.8,
                 )
             )
@@ -454,7 +459,9 @@ class EnhancedModalAnalyzer:
                 evidence.append(
                     ModalEvidence(
                         type=EvidenceType.CADENTIAL,
-                        description="bVII-I cadence (characteristic of Mixolydian mode)",
+                        description=(
+                            "bVII-I cadence (characteristic of Mixolydian mode)"
+                        ),
                         strength=0.9,
                     )
                 )
@@ -492,7 +499,11 @@ class EnhancedModalAnalyzer:
             evidence.append(
                 ModalEvidence(
                     type=EvidenceType.CONTEXTUAL,
-                    description=f"Tonal center ({tonic}) differs from parent key ({parent_key}), suggesting modal interpretation",
+                    description=(
+                        f"Tonal center ({tonic}) differs from parent key "
+                        f"({parent_key}), "
+                        "suggesting modal interpretation"
+                    ),
                     strength=0.6,
                 )
             )
@@ -823,13 +834,7 @@ class EnhancedModalAnalyzer:
             return f"{tonic} {mode_name}"
 
         # PRIORITY 2: Evidence-based mode detection with chord quality discrimination
-        has_flat7 = any("bVII" in e.description for e in evidence)
-        has_flat2 = any("bII" in e.description for e in evidence)
         has_sharp4 = any("#IV" in e.description for e in evidence)
-        has_flat6 = any("bVI" in e.description for e in evidence)
-        has_natural2 = any(
-            "II" in e.description and "bII" not in e.description for e in evidence
-        )
 
         # Check Roman numerals for chord quality clues
         roman_string = "-".join(roman_numerals)

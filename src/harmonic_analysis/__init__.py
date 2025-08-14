@@ -5,7 +5,7 @@ A comprehensive Python library for music theory analysis, providing sophisticate
 algorithms for functional harmony, modal analysis, and chromatic harmony detection.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.0b1"
 
 # Chord logic and parsing
 from .chord_parser import (

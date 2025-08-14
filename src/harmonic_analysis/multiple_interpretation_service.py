@@ -19,7 +19,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional
 
 from .enhanced_modal_analyzer import EnhancedModalAnalyzer, ModalAnalysisResult
 from .functional_harmony import FunctionalAnalysisResult, FunctionalHarmonyAnalyzer
@@ -371,7 +371,10 @@ class MultipleInterpretationService:
                 reasoning=self._generate_functional_reasoning(
                     functional_result, evidence
                 ),
-                theoretical_basis="Functional tonal harmony analysis based on Roman numeral progressions",
+                theoretical_basis=(
+                    "Functional tonal harmony analysis based on Roman numeral "
+                    "progressions"
+                ),
             )
         except Exception as e:
             print(f"Warning: Failed to create functional interpretation: {e}")
@@ -396,7 +399,10 @@ class MultipleInterpretationService:
                 key_signature=modal_result.parent_key_signature,
                 evidence=evidence,
                 reasoning=self._generate_modal_reasoning(modal_result, evidence),
-                theoretical_basis="Modal analysis based on characteristic scale degrees and harmonic patterns",
+                theoretical_basis=(
+                    "Modal analysis based on characteristic scale degrees and "
+                    "harmonic patterns"
+                ),
             )
         except Exception as e:
             print(f"Warning: Failed to create modal interpretation: {e}")
@@ -435,9 +441,14 @@ class MultipleInterpretationService:
                 AnalysisEvidence(
                     type=EvidenceType.CADENTIAL,
                     strength=cadence_strength,
-                    description=f"{cadence_name.title()} cadential progression identified",
+                    description=(
+                        f"{cadence_name.title()} cadential progression identified"
+                    ),
                     supported_interpretations=[InterpretationType.FUNCTIONAL],
-                    musical_basis=f"{cadence_name} cadence provides {self._get_cadence_quality(cadence_key)} tonal resolution",
+                    musical_basis=(
+                        f"{cadence_name} cadence provides "
+                        f"{self._get_cadence_quality(cadence_key)} tonal resolution"
+                    ),
                 )
             )
 
@@ -467,7 +478,9 @@ class MultipleInterpretationService:
                     strength=harmonic_strength,
                     description="Clear functional harmonic progression",
                     supported_interpretations=[InterpretationType.FUNCTIONAL],
-                    musical_basis="Roman numeral analysis shows clear tonal relationships",
+                    musical_basis=(
+                        "Roman numeral analysis shows clear tonal relationships"
+                    ),
                 )
             )
 
@@ -480,14 +493,18 @@ class MultipleInterpretationService:
 
             if strong_patterns:
                 # High confidence for classic progressions like I-vi-IV-V, ii-V-I, etc.
-                # Use STRUCTURAL type for higher weight (0.25 vs 0.15) and boost strength
+                # Use STRUCTURAL type for higher weight (0.25 vs 0.15)
+                # and boost strength
                 evidence.append(
                     AnalysisEvidence(
                         type=EvidenceType.STRUCTURAL,
                         strength=0.95,
                         description=f"Classic functional pattern: {strong_patterns[0]}",
                         supported_interpretations=[InterpretationType.FUNCTIONAL],
-                        musical_basis=f"{strong_patterns[0]} progression demonstrates strong tonal logic",
+                        musical_basis=(
+                            f"{strong_patterns[0]} progression demonstrates strong "
+                            "tonal logic"
+                        ),
                     )
                 )
             elif any(rn in ["I", "i"] for rn in roman_numerals):
@@ -498,7 +515,10 @@ class MultipleInterpretationService:
                         strength=0.55,
                         description="Tonic-based harmonic progression",
                         supported_interpretations=[InterpretationType.FUNCTIONAL],
-                        musical_basis="Roman numeral progression shows tonic-centered relationships",
+                        musical_basis=(
+                            "Roman numeral progression shows tonic-centered "
+                            "relationships"
+                        ),
                     )
                 )
 
@@ -521,9 +541,15 @@ class MultipleInterpretationService:
                 AnalysisEvidence(
                     type=EvidenceType.INTERVALLIC,
                     strength=0.85,
-                    description=f"{chord_info} indicates {modal_result.mode_name} characteristics",
+                    description=(
+                        f"{chord_info} indicates {modal_result.mode_name} "
+                        "characteristics"
+                    ),
                     supported_interpretations=[InterpretationType.MODAL],
-                    musical_basis=f"{chord_info} is characteristic of {modal_result.mode_name} mode",
+                    musical_basis=(
+                        f"{chord_info} is characteristic of "
+                        f"{modal_result.mode_name} mode"
+                    ),
                 )
             )
 
@@ -618,7 +644,10 @@ class MultipleInterpretationService:
         return (
             "; ".join(reasons)
             if reasons
-            else f"Modal characteristics suggest {modal_result.mode_name} interpretation"
+            else (
+                f"Modal characteristics suggest {modal_result.mode_name} "
+                "interpretation"
+            )
         )
 
     def _rank_interpretations(
@@ -673,12 +702,18 @@ class MultipleInterpretationService:
             primary.type == InterpretationType.FUNCTIONAL
             and alternative.type == InterpretationType.MODAL
         ):
-            return "Modal interpretation emphasizes scale degrees over functional harmonic relationships"
+            return (
+                "Modal interpretation emphasizes scale degrees over functional "
+                "harmonic relationships"
+            )
         elif (
             primary.type == InterpretationType.MODAL
             and alternative.type == InterpretationType.FUNCTIONAL
         ):
-            return "Functional interpretation emphasizes tonal chord progressions over modal characteristics"
+            return (
+                "Functional interpretation emphasizes tonal chord progressions "
+                "over modal characteristics"
+            )
         else:
             return "Alternative analytical perspective on the same harmonic content"
 

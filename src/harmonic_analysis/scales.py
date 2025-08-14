@@ -3,7 +3,7 @@ Scale data and constants for music theory analysis.
 """
 
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 
 @dataclass

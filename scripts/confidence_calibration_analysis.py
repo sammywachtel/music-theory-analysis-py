@@ -29,12 +29,12 @@ import json
 import os
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-
 from harmonic_analysis.multiple_interpretation_service import (
     analyze_progression_multiple,
 )
 from harmonic_analysis.types import AnalysisOptions
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 
 async def analyze_test_cases():

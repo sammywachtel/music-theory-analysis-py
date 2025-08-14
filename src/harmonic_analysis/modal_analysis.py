@@ -6,8 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 from .chord_logic import ChordMatch, find_chord_matches
-from .scales import NOTE_TO_PITCH_CLASS, PITCH_CLASS_NAMES, get_parent_key
-from .types import ChordFunction
+from .scales import NOTE_TO_PITCH_CLASS, get_parent_key
 
 
 @dataclass
@@ -181,7 +180,10 @@ class EnhancedModalAnalyzer:
                 evidence.append(
                     ModalEvidence(
                         type=pattern_match["pattern"].context,
-                        description=f"{pattern_match['pattern'].pattern} pattern supports {mode}",
+                        description=(
+                            f"{pattern_match['pattern'].pattern} pattern supports "
+                            f"{mode}"
+                        ),
                         strength=pattern_match["pattern"].strength,
                     )
                 )

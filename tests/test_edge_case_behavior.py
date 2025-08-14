@@ -7,11 +7,11 @@ and appropriate confidence levels, rather than expecting normal performance.
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional
+from typing import List
 
 import pytest
 
-from harmonic_analysis import AnalysisOptions, analyze_progression_multiple
+from harmonic_analysis import analyze_progression_multiple
 
 
 class EdgeCaseType(Enum):

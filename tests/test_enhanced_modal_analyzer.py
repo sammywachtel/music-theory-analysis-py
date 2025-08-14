@@ -8,13 +8,9 @@ Tests the sophisticated modal detection capabilities including:
 - Foil pattern detection
 """
 
-import pytest
-
 from harmonic_analysis import (
     EnhancedModalAnalyzer,
     EvidenceType,
-    ModalAnalysisResult,
-    ModalEvidence,
     analyze_modal_progression,
 )
 
