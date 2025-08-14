@@ -81,8 +81,9 @@ dmypy.json
 .DS_Store
 Thumbs.db
 
-# Generated test cases
-tests/generated/test_cases_*.json
+# Generated test cases and outputs
+tests/generated/*.json
+tests/generated/*.csv
 
 # Documentation builds
 docs/_build/
