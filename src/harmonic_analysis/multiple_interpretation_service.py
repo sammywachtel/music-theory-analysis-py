@@ -22,8 +22,7 @@ from enum import Enum
 from typing import Dict, List, Optional
 
 from .enhanced_modal_analyzer import EnhancedModalAnalyzer, ModalAnalysisResult
-from .functional_harmony import (FunctionalAnalysisResult,
-                                 FunctionalHarmonyAnalyzer)
+from .functional_harmony import FunctionalAnalysisResult, FunctionalHarmonyAnalyzer
 from .types import AnalysisOptions
 
 
@@ -364,9 +363,9 @@ class MultipleInterpretationService:
                 type=InterpretationType.FUNCTIONAL,
                 confidence=confidence,
                 analysis=functional_result.explanation or "Functional progression",
-                roman_numerals=" ".join(
-                    [chord.roman_numeral for chord in functional_result.chords]
-                ),
+                roman_numerals=[
+                    chord.roman_numeral for chord in functional_result.chords
+                ],
                 key_signature=functional_result.key_center or options.parent_key,
                 evidence=evidence,
                 reasoning=self._generate_functional_reasoning(

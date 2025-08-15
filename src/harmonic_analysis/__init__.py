@@ -8,26 +8,50 @@ algorithms for functional harmony, modal analysis, and chromatic harmony detecti
 __version__ = "0.1.0b2"
 
 # Chord logic and parsing
-from .chord_parser import (ChordMatch, ChordParser, ChordTemplate,
-                           find_chords_from_midi, NOTE_NAMES, NOTE_NAMES_FLAT,
-                           NOTE_NAMES_SHARP, NOTE_TO_PITCH_CLASS, parse_chord,
-                           parse_chord_progression)
+from .chord_parser import (
+    NOTE_NAMES,
+    NOTE_NAMES_FLAT,
+    NOTE_NAMES_SHARP,
+    NOTE_TO_PITCH_CLASS,
+    ChordMatch,
+    ChordParser,
+    ChordTemplate,
+    find_chords_from_midi,
+    parse_chord,
+    parse_chord_progression,
+)
+
 # Chromatic analysis
-from .chromatic_analysis import (analyze_chromatic_harmony, BorrowedChord,
-                                 ChromaticAnalysisResult, ChromaticAnalyzer,
-                                 ChromaticMediant, ResolutionPattern, ResolutionType,
-                                 SecondaryDominant)
+from .chromatic_analysis import (
+    BorrowedChord,
+    ChromaticAnalysisResult,
+    ChromaticAnalyzer,
+    ChromaticMediant,
+    ResolutionPattern,
+    ResolutionType,
+    SecondaryDominant,
+    analyze_chromatic_harmony,
+)
+
 # Core analysis engines
 from .comprehensive_analysis import (
     ComprehensiveAnalysisEngine,
     ComprehensiveAnalysisResult,
     ModalEnhancementResult,
 )
+
 # Modal analysis
-from .enhanced_modal_analyzer import (analyze_modal_progression, ChordAnalysis,
-                                      EnhancedModalAnalyzer, EvidenceType,
-                                      ModalAnalysisResult, ModalEvidence, ModalPattern,
-                                      PatternContext)
+from .enhanced_modal_analyzer import (
+    ChordAnalysis,
+    EnhancedModalAnalyzer,
+    EvidenceType,
+    ModalAnalysisResult,
+    ModalEvidence,
+    ModalPattern,
+    PatternContext,
+    analyze_modal_progression,
+)
+
 # Functional harmony analysis
 from .functional_harmony import (
     Cadence,
@@ -38,16 +62,22 @@ from .functional_harmony import (
     FunctionalHarmonyAnalyzer,
     ProgressionType,
 )
+
 # Multiple interpretation service
-from .multiple_interpretation_service import (AlternativeAnalysis, AnalysisEvidence,
-                                              analyze_progression_multiple,
-                                              InterpretationAnalysis,
-                                              InterpretationType,
-                                              multiple_interpretation_service,
-                                              MultipleInterpretationService,
-                                              PedagogicalLevel)
+from .multiple_interpretation_service import (
+    AlternativeAnalysis,
+    AnalysisEvidence,
+    InterpretationAnalysis,
+    InterpretationType,
+    MultipleInterpretationService,
+    PedagogicalLevel,
+    analyze_progression_multiple,
+    multiple_interpretation_service,
+)
+
 # Scale data and constants
 from .scales import MAJOR_SCALE_MODES, MODAL_PARENT_KEYS, PITCH_CLASS_NAMES, ScaleData
+
 # Types and interfaces
 from .types import AnalysisOptions, UserInputContext
 

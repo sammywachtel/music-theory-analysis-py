@@ -214,7 +214,7 @@ class FunctionalHarmonyAnalyzer:
                 return {
                     "key_center": (
                         f"{parsed['tonic']} "
-                        f"{'Minor' if parsed['is_minor'] else 'Major'}"
+                        f"{'minor' if parsed['is_minor'] else 'major'}"
                     ),
                     "key_signature": self._get_key_signature(
                         parsed["tonic"], parsed["is_minor"]
@@ -242,7 +242,7 @@ class FunctionalHarmonyAnalyzer:
         )
 
         return {
-            "key_center": f"{root_name} {'Minor' if is_minor else 'Major'}",
+            "key_center": f"{root_name} {'minor' if is_minor else 'major'}",
             "key_signature": self._get_key_signature(root_name, is_minor),
             "mode": "minor" if is_minor else "major",
             "root_pitch": suggested_root,
