@@ -151,29 +151,135 @@ pytest --cov=harmonic_analysis --cov-report=html
 
 ## Development
 
-### Setting up for development
+### Quick Development Setup
+
+We provide comprehensive automation for development setup:
 
 ```bash
+# One-command environment setup with quality automation
+python scripts/setup_dev_env.py
+
+# Or manual setup:
 git clone https://github.com/sammywachtel/harmonic-analysis-py.git
 cd harmonic-analysis-py
 pip install -e ".[dev]"
 pre-commit install
 ```
 
-### Running quality checks
+### Quality Automation System 🚀
+
+This project includes a comprehensive quality automation system with:
+
+- **🎨 Auto-formatting** with Black and isort on every commit
+- **🛡️ Security scanning** with Bandit for vulnerability detection
+- **📊 Type checking** with MyPy for robust code
+- **⚠️ Warning-based edge case testing** - tests provide feedback without blocking CI/CD
+- **🚀 Automated releases** triggered by version increments
+- **📝 IDE integration** with setup for PyCharm and VS Code
+
+### Interactive Quality Commands
 
 ```bash
-# Format code
-black src/ tests/
+# Comprehensive quality check with auto-fix and colorful reporting
+python scripts/quality_check.py --fix
 
-# Type checking
-mypy src/
+# Quick quality check without auto-fix
+python scripts/quality_check.py
 
-# Linting
-flake8 src/ tests/
+# Run quick tests only (faster feedback)
+python scripts/quality_check.py --quick-tests
 
-# Run all checks
+# Traditional individual commands
+black src/ tests/ scripts/          # Auto-format code
+isort src/ tests/ scripts/          # Sort imports
+flake8 src/ tests/ scripts/         # Linting
+mypy src/ --ignore-missing-imports  # Type checking
+bandit -r src/ -f json              # Security scanning
+
+# Pre-commit hooks (run automatically on commit)
 pre-commit run --all-files
+```
+
+### Quality Process Features
+
+#### 🎯 Pre-commit Automation
+Pre-commit hooks automatically:
+- Format code with Black (⚫)
+- Sort imports with isort (📦)
+- Run security scans with Bandit (🛡️)
+- Check type annotations with MyPy (📊)
+- Validate file structure and hygiene (🧹)
+
+#### ⚠️ Warning-Based Testing
+Edge case tests use a warning system instead of failures:
+- **Pass with warnings** for edge cases to avoid blocking CI/CD
+- **Colorful icons** (🟠⚠️📊💭🔍) highlight issues in logs
+- **Educational feedback** explains edge case behavior
+- **Behavioral validation** ensures appropriate graceful degradation
+
+#### 🚀 Automated Release Pipeline
+GitHub Actions automatically:
+- Detect version increments in pull requests to main
+- Validate CHANGELOG.md updates
+- Run comprehensive test suite with security scanning
+- Create GitHub releases with tags
+- Publish to PyPI on successful validation
+
+### Development Workflow
+
+```bash
+# 1. Setup development environment (one-time)
+python scripts/setup_dev_env.py
+
+# 2. Create feature branch
+git checkout -b feature/your-feature
+
+# 3. Develop with automatic quality checks
+# (Pre-commit hooks run automatically on commit)
+git add .
+git commit -m "feat: add your feature"
+
+# 4. Run comprehensive quality check before push
+python scripts/quality_check.py --fix
+
+# 5. Push and create PR
+git push origin feature/your-feature
+
+# 6. Automated CI/CD handles testing and release
+# (On merge to main, if version incremented)
+```
+
+### IDE Integration
+
+The setup script configures:
+
+**PyCharm:**
+- Black formatter on file save
+- Import optimization with isort
+- Code inspection with flake8
+- MyPy type checking integration
+
+**VS Code:**
+- Python formatting and linting settings
+- Pre-commit integration
+- Test discovery and execution
+- Debugging configuration
+
+### Testing with Quality Automation
+
+```bash
+# Run tests with quality automation feedback
+pytest                                    # Full test suite
+pytest tests/test_edge_case_behavior.py  # Edge case warnings
+pytest -m "not slow"                     # Quick tests only
+
+# Generate comprehensive test reports
+python scripts/quality_check.py --fix --quick-tests
+
+# Specific test categories with quality validation
+pytest -m "modal" -v                     # Modal analysis
+pytest -m "functional" -v                # Functional harmony
+pytest tests/test_comprehensive_multi_layer_validation.py -v
 ```
 
 ## Contributing
