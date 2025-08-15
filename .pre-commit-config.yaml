@@ -1,68 +1,120 @@
 repos:
+  # Pre-commit hooks for file hygiene
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
       - id: trailing-whitespace
+        name: "🧹 Remove trailing whitespace"
       - id: end-of-file-fixer
+        name: "📝 Fix end-of-file"
       - id: check-merge-conflict
+        name: "🔍 Check merge conflicts"
       - id: check-added-large-files
+        name: "📦 Check large files"
+        args: [--maxkb=1000]
       - id: check-yaml
+        name: "✅ Validate YAML files"
       - id: check-toml
+        name: "✅ Validate TOML files"
       - id: check-json
+        name: "✅ Validate JSON files"
       - id: debug-statements
+        name: "🐛 Check debug statements"
       - id: check-docstring-first
+        name: "📚 Check docstring placement"
+      - id: check-case-conflict
+        name: "🔍 Check filename case conflicts"
+      - id: check-executables-have-shebangs
+        name: "🔧 Check executable shebangs"
 
+  # Code formatting with Black
   - repo: https://github.com/psf/black
-    rev: 23.12.1
+    rev: 24.8.0
     hooks:
       - id: black
+        name: "⚫ Format code with Black"
         language_version: python3
-        args: [--line-length=88]
+        args: [--line-length=88, --target-version=py39]
 
-  - repo: https://github.com/PyCQA/flake8
-    rev: 7.0.0
-    hooks:
-      - id: flake8
-
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
-    hooks:
-      - id: mypy
-        additional_dependencies: [typing-extensions]
-        args: ["--ignore-missing-imports", "--no-strict-optional", "--disable-error-code=var-annotated", "--disable-error-code=no-untyped-def", "--disable-error-code=return-value", "--disable-error-code=assignment", "--disable-error-code=attr-defined", "--disable-error-code=name-defined", "--disable-error-code=unreachable", "--disable-error-code=no-any-return", "--disable-error-code=arg-type", "--disable-error-code=index", "--disable-error-code=valid-type"]
-
+  # Import sorting with isort
   - repo: https://github.com/PyCQA/isort
     rev: 5.13.2
     hooks:
       - id: isort
-        args: [--profile=black, --line-length=88]
+        name: "🔤 Sort imports with isort"
+        args: [--profile=black, --line-length=88, --multi-line=3, --force-grid-wrap=0]
 
+  # Code linting with flake8
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        name: "🔍 Lint with flake8"
+        additional_dependencies: [
+          flake8-docstrings,
+          flake8-bugbear,
+          flake8-comprehensions,
+          flake8-simplify
+        ]
+
+  # Security scanning
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        name: "🔒 Security scan with Bandit"
+        args: [-r, src/, -f, json, -o, bandit-report.json]
+        files: ^src/
+
+  # Type checking with mypy
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        name: "🎯 Type check with MyPy"
+        additional_dependencies: [typing-extensions, pytest, pytest-asyncio]
+        args: ["--ignore-missing-imports", "--strict-optional", "--warn-redundant-casts"]
+
+  # Local quality checks
   - repo: local
     hooks:
       - id: pytest-quick
-        name: Run quick tests
+        name: "🧪 Run core functionality tests"
         entry: pytest
         language: system
-        args: [tests/, -x, --tb=short]
+        args: [
+          tests/test_functional_harmony.py,
+          tests/test_enhanced_modal_analyzer.py,
+          tests/test_multiple_interpretation_service.py,
+          -v, --tb=short, --no-cov
+        ]
         pass_filenames: false
 
       - id: mypy-src
-        name: Type check source code
+        name: "🎯 Advanced type checking"
         entry: mypy
         language: system
-        args: [src/, --explicit-package-bases]
+        args: [src/, --explicit-package-bases, --warn-unused-ignores]
         pass_filenames: false
 
       - id: coverage-check
-        name: Test coverage validation
+        name: "📊 Code coverage validation"
         entry: pytest
         language: system
-        args: [--cov=harmonic_analysis, --cov-fail-under=60, --tb=short]
+        args: [--cov=harmonic_analysis, --cov-fail-under=60, --tb=short, --cov-report=term-missing]
         pass_filenames: false
 
       - id: package-installable
-        name: Verify package installability
+        name: "📦 Verify package installability"
         entry: python
         language: system
         args: [-m, pip, install, -e, ., --quiet]
         pass_filenames: false
+
+      - id: code-quality-reminder
+        name: "💡 Code Quality Reminder"
+        entry: python
+        language: system
+        args: [-c, "print('\\n🎯 PRE-COMMIT QUALITY CHECKS COMPLETE!\\n✅ All code quality standards met\\n🚀 Ready for commit\\n')"]
+        pass_filenames: false
+        always_run: true

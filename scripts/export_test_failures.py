@@ -5,19 +5,20 @@ Creates both human-readable and machine-readable output for analysis.
 """
 
 import asyncio
+import csv
 import json
 import sys
-from pathlib import Path
-from typing import Dict, List, Any
-import csv
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List
 
 # Add src to path for imports
 sys.path.append(str(Path(__file__).parent.parent / "src"))
 
 from harmonic_analysis import analyze_progression_multiple
+from harmonic_analysis.multiple_interpretation_service import \
+    InterpretationType
 from harmonic_analysis.types import AnalysisOptions
-from harmonic_analysis.multiple_interpretation_service import InterpretationType
 
 
 class TestFailureExporter:

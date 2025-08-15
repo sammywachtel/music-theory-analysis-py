@@ -1,0 +1,187 @@
+name: 🚀 Automated Release
+
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  check-version-increment:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    outputs:
+      version-changed: ${{ steps.version-check.outputs.changed }}
+      new-version: ${{ steps.version-check.outputs.version }}
+    steps:
+      - name: "📥 Checkout code"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "🔍 Check version increment"
+        id: version-check
+        run: |
+          # Get current version from main branch
+          git checkout origin/main -- src/harmonic_analysis/__init__.py
+          MAIN_VERSION=$(grep -oP '__version__ = "\K[^"]+' src/harmonic_analysis/__init__.py)
+          
+          # Get version from merged PR
+          git checkout HEAD -- src/harmonic_analysis/__init__.py  
+          PR_VERSION=$(grep -oP '__version__ = "\K[^"]+' src/harmonic_analysis/__init__.py)
+          
+          echo "Main version: $MAIN_VERSION"
+          echo "PR version: $PR_VERSION"
+          
+          if [ "$MAIN_VERSION" != "$PR_VERSION" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "version=$PR_VERSION" >> $GITHUB_OUTPUT
+            echo "🎉 Version incremented: $MAIN_VERSION → $PR_VERSION"
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "⚠️ Version not incremented"
+          fi
+
+  validate-release-requirements:
+    needs: check-version-increment
+    if: needs.check-version-increment.outputs.version-changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: "📥 Checkout code"
+        uses: actions/checkout@v4
+
+      - name: "🐍 Setup Python"
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: "📦 Install dependencies"
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev,test]
+
+      - name: "📋 Check CHANGELOG.md exists and updated"
+        run: |
+          if [ ! -f "CHANGELOG.md" ]; then
+            echo "❌ CHANGELOG.md missing - required for release"
+            exit 1
+          fi
+          
+          VERSION="${{ needs.check-version-increment.outputs.new-version }}"
+          if ! grep -q "## \[${VERSION}\]" CHANGELOG.md; then
+            echo "❌ CHANGELOG.md missing entry for version ${VERSION}"
+            echo "Please add a changelog entry following the format:"
+            echo "## [${VERSION}] - $(date +%Y-%m-%d)"
+            exit 1
+          fi
+          echo "✅ CHANGELOG.md properly updated"
+
+      - name: "🧪 Run comprehensive tests"
+        run: |
+          pytest tests/ --tb=short -v
+          echo "✅ All tests passed"
+
+      - name: "🔍 Run code quality checks"
+        run: |
+          black --check src/ tests/ scripts/
+          isort --check-only src/ tests/ scripts/
+          flake8 src/ tests/ scripts/
+          mypy src/ --ignore-missing-imports
+          echo "✅ Code quality checks passed"
+
+      - name: "🔒 Security scan"
+        run: |
+          pip install bandit
+          bandit -r src/ -f json -o bandit-report.json || true
+          echo "✅ Security scan completed"
+
+      - name: "📦 Build and validate package"
+        run: |
+          python -m pip install build twine
+          python -m build
+          twine check dist/*
+          echo "✅ Package built and validated"
+
+  release:
+    needs: [check-version-increment, validate-release-requirements]
+    if: needs.check-version-increment.outputs.version-changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: "📥 Checkout code"
+        uses: actions/checkout@v4
+
+      - name: "🐍 Setup Python"
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: "📦 Install build dependencies"
+        run: |
+          python -m pip install --upgrade pip build twine
+
+      - name: "🏗️ Build package"
+        run: python -m build
+
+      - name: "🏷️ Create Git tag"
+        run: |
+          VERSION="${{ needs.check-version-increment.outputs.new-version }}"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "v${VERSION}" -m "Release version ${VERSION}"
+          git push origin "v${VERSION}"
+
+      - name: "📋 Generate release notes from CHANGELOG"
+        id: release-notes
+        run: |
+          VERSION="${{ needs.check-version-increment.outputs.new-version }}"
+          
+          # Extract release notes from CHANGELOG.md
+          awk "/## \[${VERSION}\]/{flag=1; next} /## \[/{flag=0} flag" CHANGELOG.md > release_notes.txt
+          
+          if [ ! -s release_notes.txt ]; then
+            echo "Auto-generated release for version ${VERSION}" > release_notes.txt
+          fi
+          
+          echo "release-notes<<EOF" >> $GITHUB_OUTPUT
+          cat release_notes.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: "🎉 Create GitHub Release"
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "v${{ needs.check-version-increment.outputs.new-version }}"
+          release_name: "Release v${{ needs.check-version-increment.outputs.new-version }}"
+          body: ${{ steps.release-notes.outputs.release-notes }}
+          draft: false
+          prerelease: ${{ contains(needs.check-version-increment.outputs.new-version, 'b') || contains(needs.check-version-increment.outputs.new-version, 'a') || contains(needs.check-version-increment.outputs.new-version, 'rc') }}
+
+      - name: "🚀 Publish to PyPI"
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload dist/*
+
+      - name: "🎊 Success notification"
+        run: |
+          echo "🎉 RELEASE SUCCESSFUL!"
+          echo "📦 Version: ${{ needs.check-version-increment.outputs.new-version }}"
+          echo "🏷️ Tag: v${{ needs.check-version-increment.outputs.new-version }}"
+          echo "🚀 Published to PyPI"
+          echo "📋 GitHub Release created"
+
+  no-release-notification:
+    needs: check-version-increment
+    if: needs.check-version-increment.outputs.version-changed == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - name: "ℹ️ No release needed"
+        run: |
+          echo "ℹ️ No version increment detected"
+          echo "To trigger a release:"
+          echo "1. 📝 Update version in src/harmonic_analysis/__init__.py"
+          echo "2. 📋 Add entry to CHANGELOG.md"
+          echo "3. 🔀 Create PR to main branch"

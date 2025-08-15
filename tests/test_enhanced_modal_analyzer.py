@@ -8,11 +8,8 @@ Tests the sophisticated modal detection capabilities including:
 - Foil pattern detection
 """
 
-from harmonic_analysis import (
-    EnhancedModalAnalyzer,
-    EvidenceType,
-    analyze_modal_progression,
-)
+from harmonic_analysis import (EnhancedModalAnalyzer, EvidenceType,
+                               analyze_modal_progression)
 
 
 class TestEnhancedModalAnalyzer:
