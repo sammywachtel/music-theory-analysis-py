@@ -282,9 +282,24 @@ pytest -m "functional" -v                # Functional harmony
 pytest tests/test_comprehensive_multi_layer_validation.py -v
 ```
 
+## Scripts and Automation
+
+Comprehensive quality automation and maintenance scripts are available in the `scripts/` directory. See [`scripts/README.md`](scripts/README.md) for detailed documentation on:
+
+- **🚀 Quality Automation Scripts**: `setup_dev_env.py` and `quality_check.py` for comprehensive development workflow
+- **🔧 Analysis & Maintenance Scripts**: Tools for confidence calibration and test generation
+- **💻 IDE Integration**: Detailed PyCharm and VS Code setup with real-time code inspection
+- **📊 Quality Workflows**: Step-by-step development workflows with automated quality gates
+- **🎯 Script Documentation**: Standards and maintenance policies for all automation tools
+
 ## Contributing
 
 Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+For development setup and quality automation, see:
+- **[Contributing Guide](CONTRIBUTING.md)**: Comprehensive contribution guidelines with quality automation
+- **[Scripts Documentation](scripts/README.md)**: Detailed quality automation and maintenance scripts
+- **Quick Start**: Run `python scripts/setup_dev_env.py` for one-command development setup
 
 ## License
 
