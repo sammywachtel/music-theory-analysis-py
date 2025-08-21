@@ -84,6 +84,7 @@ Thumbs.db
 # Generated test cases and outputs
 tests/generated/*.json
 tests/generated/*.csv
+bandit*.json
 
 # Documentation builds
 docs/_build/

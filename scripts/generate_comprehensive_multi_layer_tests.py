@@ -92,6 +92,21 @@ class UIExpectation:
 
 
 @dataclass
+class ScaleMelodyExpectation:
+    notes: List[str]
+    key: Optional[str]
+    melody: bool
+    parent_scales: List[str]
+    diatonic_in_key: Optional[bool]
+    non_diatonic_pitches: List[str]
+    modal_labels: Dict[str, str]
+    classification: str
+    suggested_tonic: Optional[str] = None
+    confidence: Optional[float] = None
+    rationale: Optional[str] = None
+
+
+@dataclass
 class ValidationCriteria:
     acceptable_confidence_variance: float
     requires_all_analyses: bool
@@ -113,6 +128,7 @@ class MultiLayerTestCase:
     expected_chromatic: ChromaticExpectation
     expected_ui: UIExpectation
     validation: ValidationCriteria
+    expected_scale_melody: Optional[ScaleMelodyExpectation] = None
 
 
 class ComprehensiveMultiLayerGenerator:
@@ -189,6 +205,7 @@ class ComprehensiveMultiLayerGenerator:
         self.generate_ambiguous_context_tests()  # 200+ tests
         self.generate_edge_and_special_cases()  # 100+ tests
         self.generate_jazz_and_complex_harmony()  # 150+ tests
+        self.generate_scale_and_melody_tests()  # enhanced scale & melody tests
 
         self.export_results()
         self.generate_statistics()
@@ -874,6 +891,349 @@ class ComprehensiveMultiLayerGenerator:
 
     # Helper methods for music theory analysis (simplified implementations)
 
+    def get_scale_melody_fixtures(self) -> List[Dict[str, Any]]:
+        """
+        Deterministic, procedurally derived fixtures for scale/melody expectations.
+        We only seed INPUTS; all EXPECTED fields are computed so nothing is hard-coded.
+        """
+        # Seed inputs (scales/melodies + optional key + melody flag)
+        seeds = [
+            {
+                "id": "TC1-dorian-in-C",
+                "notes": ["D", "E", "F", "G", "A", "B", "C"],
+                "key": "C major",
+                "melody": False,
+            },
+            {
+                "id": "TC2-dorian-outside-Bb",
+                "notes": ["D", "E", "F", "G", "A", "B", "C"],
+                "key": "Bb major",
+                "melody": False,
+            },
+            {
+                "id": "TC3-ionian-C",
+                "notes": ["C", "D", "E", "F", "G", "A", "B"],
+                "key": "C major",
+                "melody": False,
+            },
+            {
+                "id": "TC4-aeolian-in-C",
+                "notes": ["A", "B", "C", "D", "E", "F", "G"],
+                "key": "C major",
+                "melody": False,
+            },
+            {
+                "id": "TC5-mixolydian-in-G",
+                "notes": ["D", "E", "F#", "G", "A", "B", "C"],
+                "key": "G major",
+                "melody": False,
+            },
+            {
+                "id": "TC6-c-mixolydian-borrowed",
+                "notes": ["C", "D", "E", "F", "G", "A", "Bb"],
+                "key": "C major",
+                "melody": False,
+            },
+            {
+                "id": "TC7-d-aeolian-in-F",
+                "notes": ["D", "E", "F", "G", "A", "Bb", "C"],
+                "key": "F major",
+                "melody": False,
+            },
+            {
+                "id": "TC8-e-phrygian-in-C",
+                "notes": ["E", "F", "G", "A", "B", "C", "D"],
+                "key": "C major",
+                "melody": False,
+            },
+            {
+                "id": "TC9-melody-tonic-guess-d-dorian",
+                "notes": ["E", "F", "G", "A", "B", "C", "D", "A", "C", "D"],
+                "key": None,
+                "melody": True,
+            },
+            {
+                "id": "TC10-c-lydian-borrowed",
+                "notes": ["C", "D", "E", "F#", "G", "A", "B"],
+                "key": "C major",
+                "melody": False,
+            },
+        ]
+
+        fixtures: List[Dict[str, Any]] = []
+        for s in seeds:
+            parents = self._parent_scales_of(s["notes"])
+            diatonic = (
+                None
+                if not s.get("key")
+                else self._is_diatonic_pitch_set(s["notes"], s["key"])
+            )
+            non_diatonic = (
+                []
+                if diatonic in (True, None)
+                else self._non_diatonic_pitches(s["notes"], s["key"])
+            )
+            modal_labels = self._modal_labels_for(s["notes"])
+            classification = self._classify_scale_usage(
+                s["notes"], s.get("key"), diatonic
+            )
+            suggested_tonic, conf = (None, None)
+            if s.get("melody"):
+                suggested_tonic, conf = self._infer_tonic_from_melody(s["notes"])
+
+            fixtures.append(
+                {
+                    "id": s["id"],
+                    "input": {
+                        "notes": s["notes"],
+                        "key": s.get("key"),
+                        "melody": bool(s.get("melody", False)),
+                    },
+                    "expected": {
+                        "parent_scales": parents,
+                        "diatonic_in_key": diatonic,
+                        "non_diatonic_pitches": non_diatonic,
+                        "modal_labels": modal_labels,
+                        "classification": classification,
+                        **(
+                            {"suggested_tonic": suggested_tonic, "confidence": conf}
+                            if s.get("melody")
+                            else {}
+                        ),
+                        "rationale": self._scale_rationale(
+                            s["notes"],
+                            s.get("key"),
+                            classification,
+                            modal_labels,
+                            parents,
+                            non_diatonic,
+                            suggested_tonic,
+                        ),
+                    },
+                }
+            )
+        return fixtures
+
+    def create_scale_melody_test(self, fixture: Dict[str, Any]) -> MultiLayerTestCase:
+        """Create a MultiLayerTestCase populated with scale/melody expectations only."""
+        placeholders = self.minimal_expectations_for_nonharmonic()
+        input_part = fixture["input"]
+        expected_part = fixture["expected"]
+
+        scale_exp = ScaleMelodyExpectation(
+            notes=input_part["notes"],
+            key=input_part.get("key"),
+            melody=bool(input_part.get("melody", False)),
+            parent_scales=expected_part["parent_scales"],
+            diatonic_in_key=expected_part.get("diatonic_in_key"),
+            non_diatonic_pitches=expected_part.get("non_diatonic_pitches", []),
+            modal_labels=expected_part.get("modal_labels", {}),
+            classification=expected_part["classification"],
+            suggested_tonic=expected_part.get("suggested_tonic"),
+            confidence=expected_part.get("confidence"),
+            rationale=expected_part.get("rationale"),
+        )
+
+        return MultiLayerTestCase(
+            id=fixture["id"],
+            description=f'Scale/Melody: {fixture["id"]} - {" ".join(input_part["notes"])}',
+            chords=[],  # No chord progression; scale/melody context only
+            parent_key=input_part.get("key"),
+            category="scale_melody",
+            theoretical_basis="Scale/Melody enhanced expectations",
+            expected_functional=placeholders["functional"],
+            expected_modal=placeholders["modal"],
+            expected_chromatic=placeholders["chromatic"],
+            expected_ui=placeholders["ui"],
+            validation=ValidationCriteria(
+                acceptable_confidence_variance=0.15,
+                requires_all_analyses=False,
+                minimum_displayed_analyses=0,
+                allowed_primary_interpretations=["undetermined"],
+                critical_thresholds=self.thresholds.copy(),
+            ),
+            expected_scale_melody=scale_exp,
+        )
+
+    def generate_scale_and_melody_tests(self):
+        """Generate enhanced tests for scales and melodies (pitch collections + tonic inference)."""
+        print("  🎼 Generating scale & melody fixtures with enhanced expectations...")
+        for fixture in self.get_scale_melody_fixtures():
+            self.test_cases.append(self.create_scale_melody_test(fixture))
+
+    def _parent_scales_of(self, notes: List[str]) -> List[str]:
+        """Return parent major/minor scales that contain all given notes (enharmonic aware, simplified)."""
+        majors = ["C", "G", "D", "A", "E", "B", "F#", "Db", "Ab", "Eb", "Bb", "F"]
+        result = []
+        for m in majors:
+            # Build major scale pitch classes
+            pcs = {self.note_map[m]}
+            # major scale intervals: 0,2,4,5,7,9,11
+            for iv in [2, 4, 5, 7, 9, 11]:
+                pcs.add((self.note_map[m] + iv) % 12)
+            note_pcs = {
+                (
+                    self.note_map.get(n)
+                    if n in self.note_map
+                    else self.note_map.get(self._enh_norm(n))
+                )
+                for n in notes
+            }
+            if None not in note_pcs and note_pcs.issubset(pcs):
+                result.append(f"{m} major")
+                # include relative minor for convenience
+                rel_minor_pc = (self.note_map[m] + 9) % 12
+                rel_minor = next(
+                    (
+                        k
+                        for k, v in self.note_map.items()
+                        if v == rel_minor_pc and len(k) == 1
+                    ),
+                    None,
+                )
+                if rel_minor:
+                    result.append(f"{rel_minor} minor")
+        return sorted(set(result))
+
+    def _enh_norm(self, n: str) -> str:
+        """Very small helper to normalize enharmonics to sharps/flats we know about."""
+        r = self._extract_root(n)
+        return r
+
+    def _is_diatonic_pitch_set(self, notes: List[str], key: str) -> bool:
+        """Check if all notes belong to the given key's major/minor pitch collection (simplified)."""
+        if not key:
+            return False
+        root = key.split()[0]
+        is_minor = "minor" in key
+        if root not in self.note_map:
+            return False
+        pcs = {self.note_map[root]}
+        if is_minor:
+            # natural minor: 0,2,3,5,7,8,10
+            for iv in [2, 3, 5, 7, 8, 10]:
+                pcs.add((self.note_map[root] + iv) % 12)
+        else:
+            for iv in [2, 4, 5, 7, 9, 11]:
+                pcs.add((self.note_map[root] + iv) % 12)
+        for n in notes:
+            pc = self.note_map.get(self._extract_root(n))
+            if pc is None or pc not in pcs:
+                return False
+        return True
+
+    def _non_diatonic_pitches(self, notes: List[str], key: str) -> List[str]:
+        """Return list of notes that are not in the given key (simple pitch-class check)."""
+        nd = []
+        for n in notes:
+            if not self._is_diatonic_pitch_set([n], key):
+                nd.append(self._extract_root(n))
+        # keep original spelling order as provided
+        return [x for x in notes if self._extract_root(x) in nd]
+
+    def _modal_labels_for(self, notes: List[str]) -> Dict[str, str]:
+        """Return possible modal labels for candidate tonics within the parent major scales (Ionian/Aeolian/Dorian/Phrygian/Lydian/Mixolydian/Locrian)."""
+        labels: Dict[str, str] = {}
+        parents = self._parent_scales_of(notes)
+        for p in parents:
+            p_root = p.split()[0]
+            # build major scale degrees for parent
+            degs = [(self.note_map[p_root] + iv) % 12 for iv in [0, 2, 4, 5, 7, 9, 11]]
+            degree_roots = []
+            for pc in degs:
+                # choose a canonical spelling that exists in note_map keys (prefer naturals/flats)
+                candidate = next(
+                    (
+                        k
+                        for k, v in self.note_map.items()
+                        if v == pc and len(k) <= 2 and not k.endswith("#")
+                    ),
+                    None,
+                )
+                if candidate is None:
+                    candidate = next(
+                        (k for k, v in self.note_map.items() if v == pc), None
+                    )
+                degree_roots.append(candidate)
+            modes = [
+                "Ionian",
+                "Dorian",
+                "Phrygian",
+                "Lydian",
+                "Mixolydian",
+                "Aeolian",
+                "Locrian",
+            ]
+            for idx, tonic in enumerate(degree_roots):
+                if tonic is None:
+                    continue
+                labels.setdefault(tonic, f"{tonic} {modes[idx]}")
+        # filter to labels whose tonic actually appears in the input notes
+        input_roots = {self._extract_root(n) for n in notes}
+        return {k: v for k, v in labels.items() if k in input_roots}
+
+    def _classify_scale_usage(
+        self, notes: List[str], key: Optional[str], diatonic: Optional[bool]
+    ) -> str:
+        """Decide diatonic/modal_borrowing/modal_candidate based on key and contents."""
+        if key is None:
+            return "modal_candidate"
+        return "diatonic" if diatonic else "modal_borrowing"
+
+    def _infer_tonic_from_melody(self, sequence: List[str]) -> (str, float):
+        """Simple tonic guess: prefer final note; tie-break by frequency and A–C–D cadence hint for D Dorian case used in seeds."""
+        if not sequence:
+            return ("C", 0.5)
+        last = self._extract_root(sequence[-1])
+        counts: Dict[str, int] = {}
+        for n in sequence:
+            r = self._extract_root(n)
+            counts[r] = counts.get(r, 0) + 1
+        # heuristic bonus for the last note and presence of A–C–D
+        conf = 0.6 + 0.02 * counts.get(last, 1)
+        acd = {"A", "C", "D"}.issubset({self._extract_root(n) for n in sequence})
+        if acd and last == "D":
+            conf = max(conf, 0.78)
+        return (last, min(conf, 0.95))
+
+    def _scale_rationale(
+        self,
+        notes: List[str],
+        key: Optional[str],
+        classification: str,
+        modal_labels: Dict[str, str],
+        parents: List[str],
+        non_diatonic: List[str],
+        suggested: Optional[str],
+    ) -> str:
+        bits = []
+        if parents:
+            bits.append(f"Parents: {', '.join(parents)}")
+        if key:
+            bits.append(
+                f"Key: {key} -> {'diatonic' if classification == 'diatonic' else 'non-diatonic'}"
+            )
+        if non_diatonic:
+            bits.append(f"Non-diatonic: {', '.join(non_diatonic)}")
+        if suggested:
+            bits.append(f"Suggested tonic: {suggested}")
+        if modal_labels:
+            labs = ", ".join(sorted(modal_labels.values()))
+            bits.append(f"Modal candidates: {labs}")
+        return (
+            "; ".join(bits)
+            if bits
+            else "Procedurally generated scale/melody expectation"
+        )
+
+    def _extract_root(self, n: str) -> str:
+        """Extract the root note from a note string, e.g. F#3 -> F#."""
+        if not n:
+            return ""
+        if len(n) > 1 and n[1] in "#b":
+            return n[:2]
+        return n[0]
+
     def get_modal_progressions(self, root: str, mode: str) -> List[Dict[str, Any]]:
         """Get characteristic progressions for a mode"""
         progressions = []
@@ -1249,21 +1609,75 @@ class ComprehensiveMultiLayerGenerator:
         return result
 
     def contains_bVII_pattern(self, chords: List[str]) -> bool:
-        """Check if progression contains bVII pattern"""
-        # Simplified bVII detection
-        return any("Bb" in chords and "C" in chords for i in range(len(chords) - 1))
+        """Check if progression contains bVII→I cadence (Mixolydian hallmark)"""
+        if not chords:
+            return False
+        tonic = self._extract_root(self.infer_tonic(chords))
+        tonic_pc = self.note_map.get(tonic)
+        if tonic_pc is None:
+            return False
+        bvii_pc = (tonic_pc + 10) % 12  # b7 above tonic
+
+        def root_pc(ch: str) -> Optional[int]:
+            r = self._extract_root(ch)
+            return self.note_map.get(r)
+
+        # adjacent cadence
+        for i in range(len(chords) - 1):
+            a, b = root_pc(chords[i]), root_pc(chords[i + 1])
+            if a is None or b is None:
+                continue
+            if a == bvii_pc and b == tonic_pc:
+                return True
+        # non-adjacent weak presence
+        roots = {root_pc(c) for c in chords if root_pc(c) is not None}
+        return (bvii_pc in roots) and (tonic_pc in roots)
 
     def infer_tonic(self, chords: List[str]) -> str:
         """Infer tonic from chord progression"""
         if not chords:
             return "C"
-        return (
-            chords[0]
-            .replace("m", "")
-            .replace("7", "")
-            .replace("maj", "")
-            .replace("dim", "")
+        return self._extract_root(chords[0])
+
+    def minimal_expectations_for_nonharmonic(self) -> Dict[str, Any]:
+        """Provide minimal placeholder expectations for functional/modal/chromatic layers when testing scales/melodies."""
+        functional = FunctionalExpectation(
+            detected=False,
+            key_center=None,
+            mode="major",
+            roman_numerals=[],
+            confidence=0.05,
+            threshold=self.thresholds["functional"],
+            cadences=[],
+            progression_type="other",
+            chord_functions=[],
         )
+        modal = ModalExpectation(
+            detected=False,
+            mode=None,
+            confidence=0.05,
+            threshold=self.thresholds["modal"],
+            evidence=[],
+            parent_key_relationship=None,
+            tonic_center=None,
+            modal_characteristics=[],
+        )
+        chromatic = ChromaticExpectation(
+            detected=False,
+            confidence=0.05,
+            threshold=self.thresholds["chromatic"],
+            secondary_dominants=[],
+            borrowed_chords=[],
+            chromatic_mediants=[],
+            alterations=[],
+        )
+        ui = self.determine_ui_behavior(functional, modal, chromatic)
+        return {
+            "functional": functional,
+            "modal": modal,
+            "chromatic": chromatic,
+            "ui": ui,
+        }
 
     def detect_secondary_dominants(
         self, chords: List[str], parent_key: Optional[str]
@@ -1312,19 +1726,25 @@ class ComprehensiveMultiLayerGenerator:
     def detect_chromatic_mediants(self, chords: List[str]) -> List[Dict[str, Any]]:
         """Detect chromatic mediants"""
         mediants = []
-
         for i in range(len(chords) - 1):
             interval = self.get_interval_between(chords[i], chords[i + 1])
-            if interval in [3, 4, 8, 9]:  # Third relationships
+            if interval in [3, 4, 8, 9]:  # Third (±3/±4) or sixth (±8/±9) relationships
+                if interval == 3:
+                    rel = "minor third"
+                elif interval == 4:
+                    rel = "major third"
+                elif interval == 8:
+                    rel = "minor sixth"
+                else:
+                    rel = "major sixth"
                 mediants.append(
                     {
                         "from": chords[i],
                         "to": chords[i + 1],
-                        "relationship": "major third",
+                        "relationship": rel,
                         "function": "chromatic mediant",
                     }
                 )
-
         return mediants
 
     def detect_alterations(self, chords: List[str]) -> List[Dict[str, Any]]:
@@ -1344,8 +1764,12 @@ class ComprehensiveMultiLayerGenerator:
         return "#" not in chord and "b" not in chord
 
     def get_interval_between(self, chord1: str, chord2: str) -> int:
-        """Get interval between chords (simplified)"""
-        return 3  # Default to third
+        """Get interval between chord roots in semitones"""
+        a = self._extract_root(chord1)
+        b = self._extract_root(chord2)
+        if a not in self.note_map or b not in self.note_map:
+            return 0
+        return (self.note_map[b] - self.note_map[a]) % 12
 
     def export_results(self):
         """📊 EXPORT RESULTS"""
@@ -1410,6 +1834,13 @@ class ComprehensiveMultiLayerGenerator:
             "UI_Displayed",
             "Pedagogical_Level",
             "Theoretical_Basis",
+            "SM_Notes",
+            "SM_Key",
+            "SM_Classification",
+            "SM_Parents",
+            "SM_DiatonicInKey",
+            "SM_SuggestedTonic",
+            "SM_Confidence",
         ]
 
         with open(csv_path, "w", newline="") as csvfile:

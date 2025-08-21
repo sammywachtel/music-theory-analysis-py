@@ -6,11 +6,9 @@ from dataclasses import dataclass
 from typing import List, Literal, Optional
 
 from .chord_logic import parse_chord_progression
-from .functional_harmony import (FunctionalAnalysisResult,
-                                 FunctionalHarmonyAnalyzer)
+from .functional_harmony import FunctionalAnalysisResult, FunctionalHarmonyAnalyzer
 from .modal_analysis import EnhancedModalAnalyzer, ModalAnalysisResult
-from .types import (AnalysisOptions, MultipleInterpretationResult,
-                    UserInputContext)
+from .types import AnalysisOptions, MultipleInterpretationResult, UserInputContext
 
 
 @dataclass

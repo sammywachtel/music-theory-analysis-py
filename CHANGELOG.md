@@ -23,7 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **IDE Integration Support**: PyCharm and VS Code configuration with quality tool integration
 - **Make-based Workflow**: Simple commands (make format, make quality, make test) for development
 
-### Changed  
+### Changed
 - Edge case tests use warning-based assertions preventing CI/CD blockage while highlighting issues
 - Pre-commit hooks enhanced with colorful icons and comprehensive quality checks
 - Code quality automation with Black, isort, flake8, mypy, and Bandit security scanning

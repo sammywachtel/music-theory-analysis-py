@@ -1,6 +1,7 @@
 # Contributing to Music Theory Analysis
 
-We welcome contributions to the Music Theory Analysis library! This document provides guidelines for contributing to the project.
+We welcome contributions to the Music Theory Analysis library! This document provides guidelines for contributing to the
+project.
 
 ## Table of Contents
 
@@ -15,7 +16,8 @@ We welcome contributions to the Music Theory Analysis library! This document pro
 
 ## Code of Conduct
 
-This project and everyone participating in it is governed by our Code of Conduct. By participating, you are expected to uphold this code. Please report unacceptable behavior to sammywachtel@gmail.com.
+This project and everyone participating in it is governed by our Code of Conduct. By participating, you are expected to
+uphold this code. Please report unacceptable behavior to the owner.
 
 ## Getting Started
 
@@ -52,6 +54,7 @@ We welcome contributions in the following areas:
    ```
 
 This automated setup script will:
+
 - 📎 Create and activate virtual environment
 - 📦 Install all development dependencies
 - ⚙️ Configure pre-commit hooks with quality automation
@@ -94,7 +97,9 @@ If you prefer manual setup:
 Our development environment includes comprehensive quality automation:
 
 #### Pre-commit Hooks (Automatic)
+
 Every commit automatically runs:
+
 - **⚫ Black**: Auto-formats code to consistent style
 - **📦 isort**: Organizes and sorts import statements
 - **🛡️ Bandit**: Scans for security vulnerabilities
@@ -102,6 +107,7 @@ Every commit automatically runs:
 - **🧹 File hygiene**: Removes trailing whitespace, fixes line endings
 
 #### Interactive Quality Commands
+
 ```bash
 # Comprehensive quality check with auto-fix
 python scripts/quality_check.py --fix
@@ -114,16 +120,20 @@ python scripts/quality_check.py
 ```
 
 #### Warning-Based Edge Case Testing ⚠️
+
 Our testing system uses warnings instead of failures for edge cases:
+
 - **🟠 Warning icons** highlight issues without blocking development
 - **Behavioral validation** ensures appropriate graceful degradation
 - **Educational feedback** explains edge case behavior
 - **CI/CD friendly** - warnings don't break builds
 
 #### IDE Integration 💻
+
 The setup configures your IDE for optimal development:
 
 **PyCharm Integration:**
+
 - Auto-format on save with Black
 - Import optimization with isort
 - Real-time linting with flake8
@@ -131,6 +141,7 @@ The setup configures your IDE for optimal development:
 - Test runner configuration
 
 **VS Code Integration:**
+
 - Python extension configuration
 - Linting and formatting settings
 - Debugging configuration
@@ -146,9 +157,9 @@ The setup configures your IDE for optimal development:
    ```
 
 2. **Make your changes** with automatic quality assistance:
-   - Pre-commit hooks auto-format and validate code on each commit
-   - IDE integration provides real-time feedback
-   - Quality scripts provide comprehensive validation
+    - Pre-commit hooks auto-format and validate code on each commit
+    - IDE integration provides real-time feedback
+    - Quality scripts provide comprehensive validation
 
 3. **Write or update tests** for your changes:
    ```bash
@@ -185,6 +196,7 @@ The setup configures your IDE for optimal development:
 ### Automated CI/CD Pipeline 🚀
 
 Our GitHub Actions pipeline automatically:
+
 - **✅ Validates** code quality, security, and tests
 - **📝 Checks** CHANGELOG.md updates for releases
 - **🛡️ Scans** for security vulnerabilities
@@ -288,9 +300,9 @@ class FunctionalChordAnalysis:
 
 
 def analyze_chord_function(
-    chord_symbol: str,
-    key_center: str,
-    mode: str = "major"
+        chord_symbol: str,
+        key_center: str,
+        mode: str = "major"
 ) -> FunctionalChordAnalysis:
     """Analyze the harmonic function of a chord in context.
 
@@ -344,23 +356,25 @@ assert result.confidence > 0.8  # Hard failure
 
 # Our warning-based approach (CI/CD friendly)
 if not soft_assert_with_warning(
-    result.confidence > 0.8,
-    "edge_case_confidence",
-    "confidence > 0.8",
-    f"confidence = {result.confidence:.3f}",
-    severity="medium",
-    icon="📊"
+        result.confidence > 0.8,
+        "edge_case_confidence",
+        "confidence > 0.8",
+        f"confidence = {result.confidence:.3f}",
+        severity="medium",
+        icon="📊"
 ):
     warnings_issued += 1  # Log warning, don't fail
 ```
 
 **Benefits:**
+
 - ✅ **CI/CD doesn't break** on edge cases during development
 - ⚠️ **Colorful warnings** highlight issues for attention
 - 📝 **Educational feedback** explains edge case behavior
 - 📊 **Progress tracking** shows improvement over time
 
 **Warning Categories:**
+
 - 🟠 **Behavioral**: Edge cases behaving as expected but suboptimally
 - ⚠️ **Confidence**: Low confidence scores needing attention
 - 📊 **Performance**: Metrics below ideal thresholds
@@ -388,15 +402,18 @@ Use pytest markers to categorize tests:
 ```python
 import pytest
 
+
 @pytest.mark.unit
 def test_chord_parsing():
     """Unit test for chord parsing logic."""
     pass
 
+
 @pytest.mark.modal
 def test_modal_detection():
     """Test modal analysis specifically."""
     pass
+
 
 @pytest.mark.slow
 def test_comprehensive_analysis():
@@ -417,6 +434,7 @@ def test_comprehensive_analysis():
 ```python
 import pytest
 from harmonic_analysis import ComprehensiveAnalysisEngine
+
 
 class TestFunctionalAnalysis:
 
@@ -477,10 +495,10 @@ When adding new features, consider adding:
    python scripts/quality_check.py --fix  # Auto-fix and validate
    ```
 4. **Write a clear PR description** explaining:
-   - What changes were made
-   - Why they were made
-   - Any breaking changes
-   - How to test the changes
+    - What changes were made
+    - Why they were made
+    - Any breaking changes
+    - How to test the changes
 
 ### Automated Release Process 📚
 
@@ -493,6 +511,7 @@ For releases, our GitHub Actions automatically handle:
 5. **PyPI Publishing**: Automatically publishes to PyPI on successful validation
 
 **To trigger a release:**
+
 ```bash
 # 1. Update version in src/harmonic_analysis/__init__.py
 __version__ = "0.1.0b5"  # Increment version
@@ -505,6 +524,7 @@ __version__ = "0.1.0b5"  # Increment version
 ### Quality Gate Requirements ✅
 
 All PRs must pass:
+
 - **⚫ Code Formatting**: Black formatting validation
 - **📦 Import Organization**: isort validation
 - **🔍 Linting**: flake8 code quality checks
@@ -526,6 +546,7 @@ type(scope): description
 ```
 
 **Types:**
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -535,6 +556,7 @@ type(scope): description
 - `chore`: Maintenance tasks
 
 **Examples:**
+
 - `feat(modal): add Lydian mode detection`
 - `fix(parsing): handle enharmonic chord symbols`
 - `docs(api): update functional analysis examples`
@@ -544,13 +566,13 @@ type(scope): description
 All submissions require review before merging:
 
 1. **Automated Quality Gates** must pass:
-   - ✅ CI/CD pipeline validation
-   - 📊 Comprehensive test suite (warnings allowed for edge cases)
-   - 🛡️ Security scanning with Bandit
-   - ⚫ Code formatting with Black
-   - 📦 Import organization with isort
-   - 🔍 Linting with flake8
-   - 📊 Type checking with MyPy
+    - ✅ CI/CD pipeline validation
+    - 📊 Comprehensive test suite (warnings allowed for edge cases)
+    - 🛡️ Security scanning with Bandit
+    - ⚫ Code formatting with Black
+    - 📦 Import organization with isort
+    - 🔍 Linting with flake8
+    - 📊 Type checking with MyPy
 
 2. **Code review** by at least one maintainer
 
@@ -560,6 +582,11 @@ All submissions require review before merging:
    python scripts/quality_check.py
    ```
 
+   **PyCharm Users**: Use keyboard shortcuts for faster development:
+    - `Ctrl+Alt+F`: Auto-fix formatting and imports
+    - `Ctrl+Alt+T`: Run quick functionality tests
+    - `Ctrl+Alt+Q`: Comprehensive quality check before commit
+
 4. **Discussion** of any design decisions or concerns
 
 5. **Final approval** and merge by maintainer
@@ -567,6 +594,7 @@ All submissions require review before merging:
 ### Automated Post-Merge Actions 🎆
 
 After merge to main:
+
 - **Version Detection**: Checks for version increments
 - **Automated Release**: Creates releases for version changes
 - **PyPI Publishing**: Automatically publishes new versions
@@ -584,6 +612,7 @@ After merge to main:
 ### Common Issues and Solutions
 
 #### Pre-commit Hook Failures
+
 ```bash
 # If pre-commit hooks fail, run manual fixes:
 python scripts/quality_check.py --fix
@@ -594,6 +623,7 @@ git commit -m "your message"
 ```
 
 #### IDE Integration Issues
+
 ```bash
 # Re-run setup if IDE integration isn't working:
 python scripts/setup_dev_env.py
@@ -602,6 +632,7 @@ python scripts/setup_dev_env.py
 ```
 
 #### Quality Check Script Issues
+
 ```bash
 # If quality check script fails, install missing dependencies:
 pip install bandit black isort flake8 mypy pytest
@@ -611,7 +642,9 @@ pip install -e ".[dev,test]"
 ```
 
 #### Edge Case Test Warnings
+
 Edge case tests are designed to show warnings, not failures:
+
 - 🟠 **Orange warnings** are expected for edge cases
 - ⚠️ **Warning icons** highlight areas for future improvement
 - 📊 **Confidence warnings** show suboptimal but acceptable behavior
@@ -659,6 +692,7 @@ If you need help with contributing:
 ## Quality Automation Benefits 🎆
 
 Our comprehensive quality system provides:
+
 - **⚡ Instant feedback** through pre-commit hooks
 - **🎨 Auto-formatting** ensures consistent code style
 - **🛡️ Security scanning** catches vulnerabilities early

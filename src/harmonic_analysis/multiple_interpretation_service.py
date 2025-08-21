@@ -22,8 +22,7 @@ from enum import Enum
 from typing import Dict, List, Optional
 
 from .enhanced_modal_analyzer import EnhancedModalAnalyzer, ModalAnalysisResult
-from .functional_harmony import (FunctionalAnalysisResult,
-                                 FunctionalHarmonyAnalyzer)
+from .functional_harmony import FunctionalAnalysisResult, FunctionalHarmonyAnalyzer
 from .types import AnalysisOptions
 
 

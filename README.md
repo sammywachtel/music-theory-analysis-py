@@ -21,6 +21,21 @@ pip install harmonic-analysis
 
 ## Quick Start
 
+### Interactive Demo (Optional)
+
+Experience the library immediately with the included React demo:
+
+```bash
+# From project root
+cd demo
+./setup.sh
+npm start
+```
+
+Opens http://localhost:3010 with a full-featured demo showing ALL library parameters.
+
+### Python API
+
 ```python
 from harmonic_analysis import analyze_progression_multiple, AnalysisOptions
 
@@ -131,6 +146,33 @@ class FunctionalAnalysisResult:
     explanation: str
     chromatic_elements: List[ChromaticElement]
 ```
+
+## Interactive Demo
+
+The library includes a complete React frontend demo that showcases all capabilities:
+
+### Features
+- **Real-time Analysis**: Type chord progressions, see instant results
+- **Complete Parameter Display**: Shows ALL library output parameters
+- **Interactive Examples**: Tab key cycles through different progression types
+- **Educational Interface**: Evidence, reasoning, and theoretical basis clearly displayed
+- **Alternative Interpretations**: Multiple analytical perspectives when available
+
+### Quick Demo Start
+```bash
+# From project root
+cd demo
+./setup.sh
+npm start
+```
+
+### Demo Examples
+- **`C Am F G`** - Classic functional harmony (I-vi-IV-V)
+- **`G F G`** - Modal analysis (G Mixolydian) with alternatives
+- **`Dm G C`** - Strong functional (ii-V-I)
+- Press **Tab** to cycle through examples
+
+See [demo/README.md](demo/README.md) for complete demo documentation.
 
 ## Testing
 

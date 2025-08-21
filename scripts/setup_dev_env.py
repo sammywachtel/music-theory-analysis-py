@@ -58,8 +58,7 @@ def setup_development_environment():
     ]
 
     if run_command(
-            f"pip install {' '.join(extra_tools)}",
-            "Installing additional quality tools"
+        f"pip install {' '.join(extra_tools)}", "Installing additional quality tools"
     ):
         success_count += 1
 
@@ -137,6 +136,11 @@ def create_ide_config():
         print("         🔧 Program: python")
         print("         🔧 Arguments: scripts/quality_check.py --fix")
         print("         🔧 Working Directory: $ProjectFileDir$")
+        print("")
+        print(
+            "      💡 SHORTCUT: Use keyboard shortcut ⌘, (Ctrl+Alt+S on Windows/Linux)"
+        )
+        print("          to quickly open Settings dialog")
         print("")
         print("      3️⃣ File → Settings → Tools → File Watchers (Optional):")
         print("         👁️ Add Black formatter for auto-format on save")
