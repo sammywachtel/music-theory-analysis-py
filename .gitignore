@@ -95,3 +95,11 @@ docs/build/
 node_modules/
 .env.local
 /.local_docs/
+
+# Local development files (Claude Code, etc.)
+.claude/
+.claude-*
+.local*/
+*.local
+.vscode/settings.json
+.vscode/launch.json
