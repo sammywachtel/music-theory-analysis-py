@@ -1,9 +1,8 @@
-"""
-FastAPI backend for harmonic analysis demo
-Simple backend that wraps the harmonic analysis library
+"""FastAPI backend for harmonic analysis demo.
+
+Simple backend that wraps the harmonic analysis library.
 """
 
-import re
 import time
 from typing import List, Optional
 
@@ -13,16 +12,18 @@ from pydantic import BaseModel
 
 # Import the harmonic analysis library as external dependency
 try:
-    from harmonic_analysis.multiple_interpretation_service import (
-        analyze_progression_multiple,
+    # Import local formatting utilities (moved from library)
+    from formatting import (
+        describe_contour,
+        format_scale_melody_analysis,
     )
-    from harmonic_analysis.scales import (
-        MAJOR_SCALE_MODES,
-        MODAL_PARENT_KEYS,
+
+    from harmonic_analysis import (
         NOTE_TO_PITCH_CLASS,
-        PITCH_CLASS_NAMES,
+        AnalysisOptions,
+        analyze_progression_multiple,
+        analyze_scale_melody,
     )
-    from harmonic_analysis.types import AnalysisOptions
 
     LIBRARY_AVAILABLE = True
 except ImportError as e:
@@ -33,46 +34,10 @@ except ImportError as e:
 app = FastAPI(title="Harmonic Analysis Demo API", version="1.0.0")
 
 
-def _clean_evidence_text(text: str) -> str:
-    """Clean up evidence text by removing Python object representations and improving readability."""
-    if not isinstance(text, str):
-        text = str(text)
-
-    # Remove ModalEvidence object representations
-    modal_evidence_pattern = r"ModalEvidence\(type=<EvidenceType\.(\w+): \'(\w+)\'>, description=\'([^\']+)\', strength=([0-9.]+)\)"
-
-    def replace_modal_evidence(match):
-        evidence_type = match.group(1).lower()
-        description = match.group(3)
-        strength = match.group(4)
-        return f"{description} (strength: {strength})"
-
-    text = re.sub(modal_evidence_pattern, replace_modal_evidence, text)
-
-    # Remove other object representations
-    text = re.sub(r"<EvidenceType\.(\w+): \'(\w+)\'>", r"\1", text)
-    text = re.sub(r"EvidenceType\.(\w+)", r"\1", text)
-
-    # Clean up common patterns
-    text = re.sub(r"\s+", " ", text)  # Multiple spaces to single space
-    text = text.strip()
-
-    # Improve readability
-    if "indicates" in text and "characteristics" in text:
-        # Simplify repetitive evidence descriptions
-        parts = text.split(" indicates ")
-        if len(parts) >= 2:
-            evidence_part = parts[0].strip()
-            characteristics_part = parts[1].strip()
-            if "characteristics" in characteristics_part:
-                text = f"{evidence_part} shows modal characteristics"
-
-    return text
-
-
 # Add this after creating the FastAPI app but before CORS middleware
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
+    """Log HTTP requests with timing information."""
     start_time = time.time()
     response = await call_next(request)
     process_time = time.time() - start_time
@@ -95,245 +60,71 @@ app.add_middleware(
 
 def analyze_scale_notes(scale_notes: str, parent_key: Optional[str] = None) -> dict:
     """
-    Analyze a sequence of scale notes to identify the scale/mode.
+    Analyze a sequence of scale notes using the sophisticated scale analysis library.
 
     Args:
         scale_notes: Space-separated note names (e.g., "E F G# A B C D")
         parent_key: Optional parent key context
 
     Returns:
-        Scale analysis result dictionary
+        Scale analysis result dictionary with contextual classification
     """
     if not LIBRARY_AVAILABLE:
         raise RuntimeError("Harmonic analysis library not available")
 
-    # Parse note names to pitch classes
+    # Parse note names
     notes = scale_notes.strip().split()
-    try:
-        pitch_classes = [
-            NOTE_TO_PITCH_CLASS[note.replace("♯", "#").replace("♭", "b")]
-            for note in notes
-        ]
-    except KeyError as e:
-        return {
-            "error": f"Invalid note name: {e}",
-            "input_scale": scale_notes,
-            "analysis": "Unable to parse note names",
-        }
 
-    if len(pitch_classes) < 5:
+    if len(notes) < 3:
         return {
             "error": "Insufficient notes for scale analysis",
             "input_scale": scale_notes,
-            "analysis": "Need at least 5 notes for meaningful scale analysis",
+            "analysis": "Need at least 3 notes for meaningful scale analysis",
         }
 
-    # Calculate intervals from root
-    root = pitch_classes[0]
-    intervals = [(pc - root) % 12 for pc in pitch_classes]
+    try:
+        # Use the library's sophisticated analysis
+        result = analyze_scale_melody(notes, parent_key, melody=False)
 
-    # Extended scale patterns including exotic scales
-    scale_patterns = {
-        # Major scale modes
-        "Ionian": [0, 2, 4, 5, 7, 9, 11],
-        "Dorian": [0, 2, 3, 5, 7, 9, 10],
-        "Phrygian": [0, 1, 3, 5, 7, 8, 10],
-        "Lydian": [0, 2, 4, 6, 7, 9, 11],
-        "Mixolydian": [0, 2, 4, 5, 7, 9, 10],
-        "Aeolian": [0, 2, 3, 5, 7, 8, 10],
-        "Locrian": [0, 1, 3, 5, 6, 8, 10],
-        # Harmonic minor and its modes
-        "Harmonic Minor": [0, 2, 3, 5, 7, 8, 11],
-        "Locrian ♮6": [0, 1, 3, 5, 6, 9, 10],
-        "Ionian #5": [0, 2, 4, 5, 8, 9, 11],
-        "Dorian #4": [0, 2, 3, 6, 7, 9, 10],
-        "Phrygian Dominant": [0, 1, 4, 5, 7, 8, 10],  # 5th mode of harmonic minor
-        "Lydian #2": [0, 3, 4, 6, 7, 9, 11],
-        "Ultralocrian": [0, 1, 3, 4, 6, 8, 9],
-        # Melodic minor modes
-        "Melodic Minor": [0, 2, 3, 5, 7, 9, 11],
-        "Dorian b2": [0, 1, 3, 5, 7, 9, 10],
-        "Lydian Augmented": [0, 2, 4, 6, 8, 9, 11],
-        "Lydian Dominant": [0, 2, 4, 6, 7, 9, 10],
-        "Mixolydian b6": [0, 2, 4, 5, 7, 8, 10],
-        "Locrian ♮2": [0, 2, 3, 5, 6, 8, 10],
-        "Altered": [0, 1, 3, 4, 6, 8, 10],
-    }
+        # Debug logging for parent key logic
+        print(
+            f"🎯 Scale analysis result: classification='{result.classification}', "
+            f"parent_scales={result.parent_scales}"
+        )
+        print(f"🎯 Modal labels: {result.modal_labels}")
+        print(f"🎯 Non-diatonic pitches: {result.non_diatonic_pitches}")
 
-    # Find best matching scale
-    best_match = None
-    best_score = 0
+        # Use library's comprehensive formatting - this replaces all the manual formatting above!
+        formatted_result = format_scale_melody_analysis(result)
 
-    for scale_name, pattern in scale_patterns.items():
-        # Check how many notes match the pattern
-        matches = sum(1 for interval in intervals if interval in pattern)
-        score = matches / len(intervals)
+        # Return the properly formatted result from the library
+        return formatted_result
 
-        if score > best_score and score >= 0.6:  # At least 60% match
-            best_match = scale_name
-            best_score = score
+    except Exception as e:
+        # Fallback to basic analysis if sophisticated analysis fails
+        print(f"⚠️  Sophisticated analysis failed: {e}, falling back to basic analysis")
+        return _basic_scale_analysis(scale_notes, parent_key)
 
-    if not best_match:
-        return {
-            "input_scale": scale_notes,
-            "primary_analysis": {
-                "type": "SCALE",
-                "confidence": 0.3,
-                "analysis": f"Unrecognized scale pattern with intervals: {intervals}",
-                "mode_name": "Unknown",
-                "parent_key": parent_key or "Not specified",
-                "scale_degrees": [str(i + 1) for i in range(len(intervals))],
-                "intervallic_analysis": f"Custom interval pattern: {intervals}",
-                "characteristic_notes": [
-                    notes[0],
-                    notes[2] if len(notes) > 2 else notes[1],
-                ],
-                "reasoning": "No standard scale pattern matches the provided notes.",
-                "theoretical_basis": "Analysis based on intervallic content and note relationships.",
-            },
-            "harmonic_implications": [
-                "Custom intervallic pattern",
-                "Requires individual analysis",
-            ],
-            "metadata": {
-                "scale_type": "custom",
-                "parent_scale": "Unknown",
-                "analysis_time_ms": 15,
-            },
-        }
 
-    # Determine parent scale and characteristics
-    # Get root note name first
-    root_name = notes[0]
-
-    # Use provided parent_key if available, otherwise determine automatically
-    if parent_key:
-        # User specified a parent key - determine the mode based on the relationship
-        parent_scale_name = parent_key.replace(" major", "").replace(" minor", "")
-        parent_scale = "Major Scale"  # Default assumption
-
-        # Calculate which mode of the parent scale matches our root note
-        note_names = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
-        try:
-            parent_root = note_names.index(parent_scale_name)
-            scale_root = note_names.index(root_name)
-            mode_degree = (scale_root - parent_root) % 12
-
-            # Map mode degrees to mode names (for major scale modes)
-            mode_map = {
-                0: "Ionian",
-                2: "Dorian",
-                4: "Phrygian",
-                5: "Lydian",
-                7: "Mixolydian",
-                9: "Aeolian",
-                11: "Locrian",
-            }
-
-            if mode_degree in mode_map:
-                calculated_mode = mode_map[mode_degree]
-                # If the calculated mode matches our detected pattern, use the parent key context
-                if calculated_mode == best_match or (
-                    calculated_mode == "Aeolian" and best_match == "Natural Minor"
-                ):
-                    best_match = calculated_mode
-                    parent_scale = f"{parent_key}"
-        except (ValueError, KeyError) as e:
-            # Fall back to automatic detection if parent key parsing fails
-            print(
-                f"Parent key parsing failed: {e}, falling back to automatic detection"
-            )
-
-    # Set characteristics based on the final determined mode
-    characteristics = []
-    if best_match == "Phrygian Dominant":
-        characteristics = [
-            "Exotic sound",
-            "Augmented 2nd interval",
-            "Middle Eastern flavor",
-            "Strong dominant character",
-        ]
-        if not parent_key:
-            parent_scale = "Harmonic Minor"
-    elif best_match == "Mixolydian":
-        characteristics = ["Modal sound", "Dominant character", "Bluesy flavor"]
-        if not parent_key:
-            parent_scale = "Major Scale"
-    elif best_match == "Dorian":
-        characteristics = ["Minor modal character", "Natural 6th", "Jazz flavor"]
-        if not parent_key:
-            parent_scale = "Major Scale"
-    elif best_match == "Phrygian":
-        characteristics = ["Dark minor character", "Spanish flavor", "Flamenco sound"]
-        if not parent_key:
-            parent_scale = "Major Scale"
-    elif best_match in ["Natural Minor", "Aeolian"]:
-        characteristics = [
-            "Natural minor sound",
-            "Relative to major",
-            "Classical minor",
-        ]
-        best_match = "Aeolian"  # Standardize name
-        if not parent_key:
-            parent_scale = "Major Scale"
-    else:
-        if not parent_key:
-            parent_scale = "Major Scale"
-
-    # Generate scale degrees
-    scale_degrees = []
-    for pc in pitch_classes:
-        degree = (pc - root) % 12
-        # Convert to scale degree notation
-        degree_map = {
-            0: "1",
-            1: "♭2",
-            2: "2",
-            3: "♭3",
-            4: "3",
-            5: "4",
-            6: "#4/♭5",
-            7: "5",
-            8: "♭6",
-            9: "6",
-            10: "♭7",
-            11: "7",
-        }
-        scale_degrees.append(degree_map.get(degree, str(degree)))
-
-    result = {
+def _basic_scale_analysis(scale_notes: str, parent_key: Optional[str] = None) -> dict:
+    """Fallback basic analysis if sophisticated analysis fails."""
+    notes = scale_notes.strip().split()
+    return {
         "input_scale": scale_notes,
         "primary_analysis": {
             "type": "SCALE",
-            "confidence": round(best_score, 3),
-            "analysis": f"{root_name} {best_match} - {', '.join(characteristics) if characteristics else 'Standard modal characteristics'}",
-            "mode_name": best_match,
-            "parent_key": parent_scale,
-            "scale_degrees": scale_degrees,
-            "intervallic_analysis": f"Interval pattern: {intervals} - {_describe_intervals(intervals)}",
-            "characteristic_notes": _get_characteristic_notes(
-                best_match, scale_degrees
-            ),
-            "reasoning": f"Scale identified as {best_match} with {int(best_score * 100)}% confidence based on intervallic pattern matching.",
-            "theoretical_basis": f"Modal analysis based on {parent_scale} system with characteristic intervallic patterns.",
-            "evidence": [
-                {
-                    "type": "INTERVALLIC",
-                    "strength": best_score,
-                    "description": f"Strong match with {best_match} interval pattern",
-                    "supported_interpretations": ["SCALE"],
-                    "musical_basis": f"Intervallic analysis confirms {best_match} characteristics",
-                }
-            ],
+            "confidence": 0.5,
+            "analysis": f"Basic analysis of {len(notes)} notes",
+            "mode_name": "Unknown",
+            "parent_key": parent_key or "Not specified",
+            "scale_degrees": [str(i + 1) for i in range(len(notes))],
+            "reasoning": "Fallback analysis due to processing error",
+            "theoretical_basis": "Basic note sequence analysis",
         },
-        "harmonic_implications": _get_harmonic_implications(best_match),
-        "metadata": {
-            "scale_type": "modal" if parent_scale != "Unknown" else "exotic",
-            "parent_scale": parent_scale,
-            "analysis_time_ms": 25,
-        },
+        "harmonic_implications": ["Requires manual analysis"],
+        "metadata": {"scale_type": "basic", "analysis_time_ms": 5},
+        "alternative_analyses": [],
     }
-    return result
 
 
 def _describe_intervals(intervals: list) -> str:
@@ -419,7 +210,7 @@ def analyze_melody_notes(
         else:
             contour.append("D")  # Down
 
-    contour_description = _describe_contour(contour)
+    contour_description = describe_contour(contour)
 
     # Calculate intervals between consecutive notes
     intervals = []
@@ -440,7 +231,6 @@ def analyze_melody_notes(
     # Determine directional tendency
     up_movements = contour.count("U")
     down_movements = contour.count("D")
-    repeated_notes = contour.count("R")
 
     if up_movements > down_movements:
         direction = "Generally ascending"
@@ -535,27 +325,6 @@ def analyze_melody_notes(
     }
 
 
-def _describe_contour(contour: list) -> str:
-    """Describe melodic contour pattern."""
-    if not contour:
-        return "Static"
-
-    up_count = contour.count("U")
-    down_count = contour.count("D")
-    repeat_count = contour.count("R")
-
-    if up_count > down_count * 2:
-        return "Strong ascending contour"
-    elif down_count > up_count * 2:
-        return "Strong descending contour"
-    elif up_count == down_count:
-        return "Balanced arch contour"
-    elif repeat_count > len(contour) // 2:
-        return "Static with repeated notes"
-    else:
-        return "Mixed directional contour"
-
-
 def _get_stepwise_analysis(intervals: list) -> str:
     """Analyze stepwise vs. leaping motion."""
     if not intervals:
@@ -621,6 +390,8 @@ def _get_harmonic_implications(scale_name: str) -> list:
 
 
 class AnalysisRequest(BaseModel):
+    """Request model for chord progression analysis."""
+
     chords: List[str]
     parent_key: Optional[str] = None
     pedagogical_level: str = "intermediate"
@@ -629,18 +400,24 @@ class AnalysisRequest(BaseModel):
 
 
 class ScaleAnalysisRequest(BaseModel):
+    """Request model for scale analysis."""
+
     scale: str
     parent_key: Optional[str] = None
     analysis_depth: str = "comprehensive"
 
 
 class MelodyAnalysisRequest(BaseModel):
+    """Request model for melody analysis."""
+
     melody: List[str]
     parent_key: Optional[str] = None
     analysis_type: str = "harmonic_implications"
 
 
 class AnalysisResponse(BaseModel):
+    """Response model for analysis results."""
+
     input_chords: List[str]
     primary_analysis: dict
     alternative_analyses: List[dict]
@@ -649,19 +426,19 @@ class AnalysisResponse(BaseModel):
 
 @app.get("/")
 async def root():
+    """Root endpoint."""
     return {"message": "Harmonic Analysis Demo API", "status": "running"}
 
 
 @app.get("/health")
 async def health():
+    """Health check endpoint."""
     return {"status": "healthy"}
 
 
 @app.post("/api/analyze", response_model=AnalysisResponse)
 async def analyze_chord_progression(request: AnalysisRequest):
-    """
-    Analyze a chord progression and return multiple interpretations
-    """
+    """Analyze a chord progression and return multiple interpretations."""
     if not LIBRARY_AVAILABLE:
         raise HTTPException(
             status_code=503,
@@ -680,7 +457,7 @@ async def analyze_chord_progression(request: AnalysisRequest):
         # Run the analysis
         result = await analyze_progression_multiple(request.chords, options)
 
-        # Convert the result to the expected format
+        # Convert the result to the expected format including enhanced fields
         response_data = {
             "input_chords": result.input_chords,
             "primary_analysis": {
@@ -690,21 +467,53 @@ async def analyze_chord_progression(request: AnalysisRequest):
                 "roman_numerals": result.primary_analysis.roman_numerals or [],
                 "key_signature": result.primary_analysis.key_signature,
                 "mode": result.primary_analysis.mode,
-                "reasoning": _clean_evidence_text(result.primary_analysis.reasoning),
+                "reasoning": result.primary_analysis.reasoning,
                 "theoretical_basis": result.primary_analysis.theoretical_basis,
                 "evidence": [
                     {
                         "type": evidence.type.value,
                         "strength": evidence.strength,
-                        "description": _clean_evidence_text(evidence.description),
+                        "description": evidence.description,
                         "supported_interpretations": [
                             interp.value
                             for interp in evidence.supported_interpretations
                         ],
-                        "musical_basis": _clean_evidence_text(evidence.musical_basis),
+                        "musical_basis": evidence.musical_basis,
                     }
                     for evidence in result.primary_analysis.evidence
                 ],
+                # Enhanced analysis fields
+                "modal_characteristics": getattr(
+                    result.primary_analysis, "modal_characteristics", []
+                ),
+                "parent_key_relationship": getattr(
+                    result.primary_analysis, "parent_key_relationship", None
+                ),
+                "secondary_dominants": getattr(
+                    result.primary_analysis, "secondary_dominants", []
+                ),
+                "borrowed_chords": getattr(
+                    result.primary_analysis, "borrowed_chords", []
+                ),
+                "chromatic_mediants": getattr(
+                    result.primary_analysis, "chromatic_mediants", []
+                ),
+                "cadences": getattr(result.primary_analysis, "cadences", []),
+                "chord_functions": getattr(
+                    result.primary_analysis, "chord_functions", []
+                ),
+                "contextual_classification": getattr(
+                    result.primary_analysis, "contextual_classification", None
+                ),
+                "functional_confidence": getattr(
+                    result.primary_analysis, "functional_confidence", None
+                ),
+                "modal_confidence": getattr(
+                    result.primary_analysis, "modal_confidence", None
+                ),
+                "chromatic_confidence": getattr(
+                    result.primary_analysis, "chromatic_confidence", None
+                ),
             },
             "alternative_analyses": [
                 {
@@ -714,24 +523,40 @@ async def analyze_chord_progression(request: AnalysisRequest):
                     "roman_numerals": alt.roman_numerals or [],
                     "key_signature": alt.key_signature,
                     "mode": alt.mode,
-                    "reasoning": _clean_evidence_text(alt.reasoning),
+                    "reasoning": alt.reasoning,
                     "theoretical_basis": alt.theoretical_basis,
                     "relationship_to_primary": alt.relationship_to_primary,
                     "evidence": [
                         {
                             "type": evidence.type.value,
                             "strength": evidence.strength,
-                            "description": _clean_evidence_text(evidence.description),
+                            "description": evidence.description,
                             "supported_interpretations": [
                                 interp.value
                                 for interp in evidence.supported_interpretations
                             ],
-                            "musical_basis": _clean_evidence_text(
-                                evidence.musical_basis
-                            ),
+                            "musical_basis": evidence.musical_basis,
                         }
                         for evidence in alt.evidence
                     ],
+                    # Enhanced fields for alternatives too
+                    "modal_characteristics": getattr(alt, "modal_characteristics", []),
+                    "parent_key_relationship": getattr(
+                        alt, "parent_key_relationship", None
+                    ),
+                    "secondary_dominants": getattr(alt, "secondary_dominants", []),
+                    "borrowed_chords": getattr(alt, "borrowed_chords", []),
+                    "chromatic_mediants": getattr(alt, "chromatic_mediants", []),
+                    "cadences": getattr(alt, "cadences", []),
+                    "chord_functions": getattr(alt, "chord_functions", []),
+                    "contextual_classification": getattr(
+                        alt, "contextual_classification", None
+                    ),
+                    "functional_confidence": getattr(
+                        alt, "functional_confidence", None
+                    ),
+                    "modal_confidence": getattr(alt, "modal_confidence", None),
+                    "chromatic_confidence": getattr(alt, "chromatic_confidence", None),
                 }
                 for alt in result.alternative_analyses
             ],
@@ -752,9 +577,7 @@ async def analyze_chord_progression(request: AnalysisRequest):
 
 @app.post("/api/analyze-scale")
 async def analyze_scale(request: ScaleAnalysisRequest):
-    """
-    Analyze a scale and return modal and harmonic characteristics using the real harmonic analysis library
-    """
+    """Analyze a scale and return modal and harmonic characteristics."""
     if not LIBRARY_AVAILABLE:
         raise HTTPException(
             status_code=503,
@@ -762,6 +585,12 @@ async def analyze_scale(request: ScaleAnalysisRequest):
         )
 
     try:
+        # Debug logging to see what we received
+        print(
+            f"🔍 Scale analysis request: scale='{request.scale}', "
+            f"parent_key='{request.parent_key}'"
+        )
+
         # Use the real scale analysis function
         result = analyze_scale_notes(request.scale, request.parent_key)
 
@@ -781,9 +610,7 @@ async def analyze_scale(request: ScaleAnalysisRequest):
 
 @app.post("/api/analyze-melody")
 async def analyze_melody(request: MelodyAnalysisRequest):
-    """
-    Analyze a melody and return contour, harmonic implications, and modal characteristics using the real harmonic analysis library
-    """
+    """Analyze a melody and return contour, harmonic implications, and modal characteristics."""
     if not LIBRARY_AVAILABLE:
         raise HTTPException(
             status_code=503,
@@ -809,4 +636,4 @@ async def analyze_melody(request: MelodyAnalysisRequest):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8010, log_level="True", reload="True")
+    uvicorn.run(app, host="0.0.0.0", port=8010, log_level="info")
