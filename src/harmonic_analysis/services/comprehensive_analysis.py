@@ -5,10 +5,13 @@ Comprehensive analysis engine coordinating functional, modal, and chromatic anal
 from dataclasses import dataclass
 from typing import List, Literal, Optional
 
-from .chord_logic import parse_chord_progression
-from .functional_harmony import FunctionalAnalysisResult, FunctionalHarmonyAnalyzer
-from .modal_analysis import EnhancedModalAnalyzer, ModalAnalysisResult
-from .types import AnalysisOptions, MultipleInterpretationResult, UserInputContext
+from ..core.functional_harmony import (
+    FunctionalAnalysisResult,
+    FunctionalHarmonyAnalyzer,
+)
+from ..core.modal_analysis import EnhancedModalAnalyzer, ModalAnalysisResult
+from ..types import AnalysisOptions, MultipleInterpretationResult, UserInputContext
+from ..utils.chord_logic import parse_chord_progression
 
 
 @dataclass
@@ -161,7 +164,7 @@ class ComprehensiveAnalysisEngine:
         options: AnalysisOptions,
     ) -> MultipleInterpretationResult:
         """Convert comprehensive result to multiple interpretation format."""
-        from .types import Evidence, Interpretation
+        from ..types import Evidence, Interpretation
 
         chord_symbols = self._parse_chord_progression(progression_input)
 

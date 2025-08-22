@@ -21,9 +21,12 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, List, Optional
 
-from .enhanced_modal_analyzer import EnhancedModalAnalyzer, ModalAnalysisResult
-from .functional_harmony import FunctionalAnalysisResult, FunctionalHarmonyAnalyzer
-from .types import AnalysisOptions
+from ..core.enhanced_modal_analyzer import EnhancedModalAnalyzer, ModalAnalysisResult
+from ..core.functional_harmony import (
+    FunctionalAnalysisResult,
+    FunctionalHarmonyAnalyzer,
+)
+from ..types import AnalysisOptions
 
 
 class EvidenceType(Enum):
@@ -76,23 +79,23 @@ class InterpretationAnalysis:
     evidence: List[AnalysisEvidence] = field(default_factory=list)
     reasoning: str = ""
     theoretical_basis: str = ""
-    
+
     # Modal analysis fields
     modal_characteristics: List[str] = field(default_factory=list)
     parent_key_relationship: Optional[str] = None
-    
-    # Chromatic analysis fields  
+
+    # Chromatic analysis fields
     secondary_dominants: List[Dict[str, str]] = field(default_factory=list)
     borrowed_chords: List[Dict[str, str]] = field(default_factory=list)
     chromatic_mediants: List[Dict[str, str]] = field(default_factory=list)
-    
+
     # Functional analysis fields
     cadences: List[Dict[str, str]] = field(default_factory=list)
     chord_functions: List[str] = field(default_factory=list)
-    
+
     # Contextual classification
     contextual_classification: Optional[str] = None
-    
+
     # Confidence breakdown for UI behavior
     functional_confidence: Optional[float] = None
     modal_confidence: Optional[float] = None
@@ -383,10 +386,12 @@ class MultipleInterpretationService:
             # Extract cadences and chord functions from functional analysis
             cadences = self._extract_cadences(functional_result)
             chord_functions = self._extract_chord_functions(functional_result)
-            
+
             # Detect chromatic elements
-            chromatic_elements = self._detect_chromatic_elements(chords, options.parent_key)
-            
+            chromatic_elements = self._detect_chromatic_elements(
+                chords, options.parent_key
+            )
+
             return InterpretationAnalysis(
                 type=InterpretationType.FUNCTIONAL,
                 confidence=confidence,
@@ -435,10 +440,12 @@ class MultipleInterpretationService:
             parent_key_relationship = self._determine_parent_key_relationship(
                 modal_result, options.parent_key
             )
-            
+
             # Detect chromatic elements
-            chromatic_elements = self._detect_chromatic_elements(chords, options.parent_key)
-            
+            chromatic_elements = self._detect_chromatic_elements(
+                chords, options.parent_key
+            )
+
             return InterpretationAnalysis(
                 type=InterpretationType.MODAL,
                 confidence=confidence,
@@ -912,61 +919,75 @@ class MultipleInterpretationService:
         return False
 
     # Helper methods for new test framework fields
-    
-    def _extract_cadences(self, functional_result: FunctionalAnalysisResult) -> List[Dict[str, str]]:
+
+    def _extract_cadences(
+        self, functional_result: FunctionalAnalysisResult
+    ) -> List[Dict[str, str]]:
         """Extract cadence information from functional analysis"""
         cadences = []
-        
+
         # Look for cadences in the progression
-        if hasattr(functional_result, 'cadences') and functional_result.cadences:
+        if hasattr(functional_result, "cadences") and functional_result.cadences:
             for cadence in functional_result.cadences:
                 # Handle cadence as dict or object
-                if hasattr(cadence, '__dict__'):
-                    cadence_chords = getattr(cadence, 'chords', '')
+                if hasattr(cadence, "__dict__"):
+                    cadence_chords = getattr(cadence, "chords", "")
                     # Convert chord objects to string representation
                     if isinstance(cadence_chords, list):
                         chord_names = []
                         for chord in cadence_chords:
-                            if hasattr(chord, 'roman_numeral'):
+                            if hasattr(chord, "roman_numeral"):
                                 chord_names.append(chord.roman_numeral)
-                            elif hasattr(chord, 'chord_symbol'):
+                            elif hasattr(chord, "chord_symbol"):
                                 chord_names.append(chord.chord_symbol)
                             else:
                                 chord_names.append(str(chord))
                         cadence_chords = "-".join(chord_names)
-                    
-                    cadences.append({
-                        "type": getattr(cadence, 'type', 'unknown'),
-                        "chords": cadence_chords,
-                        "strength": str(getattr(cadence, 'strength', 0.5))
-                    })
+
+                    cadences.append(
+                        {
+                            "type": getattr(cadence, "type", "unknown"),
+                            "chords": cadence_chords,
+                            "strength": str(getattr(cadence, "strength", 0.5)),
+                        }
+                    )
                 elif isinstance(cadence, dict):
-                    cadences.append({
-                        "type": cadence.get("type", "unknown"),
-                        "chords": cadence.get("chords", ""),
-                        "strength": str(cadence.get("strength", 0.5))
-                    })
+                    cadences.append(
+                        {
+                            "type": cadence.get("type", "unknown"),
+                            "chords": cadence.get("chords", ""),
+                            "strength": str(cadence.get("strength", 0.5)),
+                        }
+                    )
         else:
             # Detect common cadences from roman numerals
             romans = [chord.roman_numeral for chord in functional_result.chords]
             if len(romans) >= 2:
                 last_two = romans[-2:]
                 if last_two == ["V", "I"] or last_two == ["V7", "I"]:
-                    cadences.append({"type": "authentic", "chords": "V-I", "strength": "0.9"})
+                    cadences.append(
+                        {"type": "authentic", "chords": "V-I", "strength": "0.9"}
+                    )
                 elif last_two == ["IV", "I"]:
-                    cadences.append({"type": "plagal", "chords": "IV-I", "strength": "0.7"})
+                    cadences.append(
+                        {"type": "plagal", "chords": "IV-I", "strength": "0.7"}
+                    )
                 elif last_two == ["V", "vi"]:
-                    cadences.append({"type": "deceptive", "chords": "V-vi", "strength": "0.8"})
-        
+                    cadences.append(
+                        {"type": "deceptive", "chords": "V-vi", "strength": "0.8"}
+                    )
+
         return cadences
-    
-    def _extract_chord_functions(self, functional_result: FunctionalAnalysisResult) -> List[str]:
+
+    def _extract_chord_functions(
+        self, functional_result: FunctionalAnalysisResult
+    ) -> List[str]:
         """Extract chord function names from functional analysis"""
         functions = []
-        
+
         for chord in functional_result.chords:
             roman = chord.roman_numeral
-            
+
             # Map roman numerals to functions
             if roman in ["I", "i", "vi", "VI"]:
                 functions.append("tonic")
@@ -976,15 +997,17 @@ class MultipleInterpretationService:
                 functions.append("dominant")
             else:
                 functions.append("other")
-        
+
         return functions
-    
-    def _extract_modal_characteristics(self, modal_result: ModalAnalysisResult) -> List[str]:
+
+    def _extract_modal_characteristics(
+        self, modal_result: ModalAnalysisResult
+    ) -> List[str]:
         """Extract modal characteristics from modal analysis"""
         characteristics = []
-        
+
         mode_name = modal_result.mode_name
-        
+
         # Add characteristics based on mode
         if "Mixolydian" in mode_name:
             characteristics.append("bVII chord (modal characteristic)")
@@ -1005,33 +1028,45 @@ class MultipleInterpretationService:
         elif "Locrian" in mode_name:
             characteristics.append("Diminished tonic")
             characteristics.append("bII and b5")
-        
+
         return characteristics
-    
-    def _determine_parent_key_relationship(self, modal_result: ModalAnalysisResult, given_key: Optional[str]) -> str:
+
+    def _determine_parent_key_relationship(
+        self, modal_result: ModalAnalysisResult, given_key: Optional[str]
+    ) -> str:
         """Determine relationship between modal analysis and given key"""
         if not given_key:
             return "no_context"
-        
+
         modal_parent = modal_result.parent_key_signature
-        
+
         # Normalize key strings for comparison
         given_normalized = given_key.replace(" major", "").replace(" minor", "")
-        modal_normalized = modal_parent.replace(" major", "").replace(" minor", "") if modal_parent else ""
-        
+        modal_normalized = (
+            modal_parent.replace(" major", "").replace(" minor", "")
+            if modal_parent
+            else ""
+        )
+
         if modal_normalized == given_normalized:
             return "matches"
         else:
             return "conflicts"
-    
-    def _determine_contextual_classification(self, chords: List[str], parent_key: Optional[str]) -> str:
-        """Determine contextual classification (diatonic vs modal borrowing vs modal candidate)"""
+
+    def _determine_contextual_classification(
+        self, chords: List[str], parent_key: Optional[str]
+    ) -> str:
+        """
+        Determine contextual classification.
+
+        (diatonic vs modal borrowing vs modal candidate)
+        """
         if not parent_key:
             return "modal_candidate"
-        
+
         # Use scale/melody analysis to determine classification
-        from .scale_melody_analysis import analyze_scale_melody
-        
+        from ..scale_melody_analysis import analyze_scale_melody
+
         # Extract unique notes from chords (simplified)
         notes = []
         for chord in chords:
@@ -1040,50 +1075,46 @@ class MultipleInterpretationService:
             if len(chord) > 1 and chord[1] in "b#":
                 root = chord[:2]
             notes.append(root)
-        
+
         if notes:
             result = analyze_scale_melody(notes, parent_key, melody=False)
             return result.classification
-        
+
         return "modal_candidate"
-    
-    def _detect_chromatic_elements(self, chords: List[str], key: Optional[str] = None) -> Dict[str, List[Dict[str, str]]]:
+
+    def _detect_chromatic_elements(
+        self, chords: List[str], key: Optional[str] = None
+    ) -> Dict[str, List[Dict[str, str]]]:
         """Detect chromatic elements like secondary dominants, borrowed chords, etc."""
         elements = {
             "secondary_dominants": [],
             "borrowed_chords": [],
-            "chromatic_mediants": []
+            "chromatic_mediants": [],
         }
-        
+
         if not key:
             return elements
-        
+
         # Simple secondary dominant detection
         for i, chord in enumerate(chords):
             # Look for dominant 7th chords that aren't V7 of the key
             if "7" in chord and i < len(chords) - 1:
                 next_chord = chords[i + 1]
-                
+
                 # A7 -> Dm in key of C = V7/ii
                 if chord == "A7" and next_chord == "Dm" and "C" in key:
-                    elements["secondary_dominants"].append({
-                        "chord": chord,
-                        "target": next_chord,
-                        "roman_numeral": "V7/ii"
-                    })
+                    elements["secondary_dominants"].append(
+                        {"chord": chord, "target": next_chord, "roman_numeral": "V7/ii"}
+                    )
                 elif chord == "E7" and next_chord == "Am" and "C" in key:
-                    elements["secondary_dominants"].append({
-                        "chord": chord,
-                        "target": next_chord,
-                        "roman_numeral": "V7/vi"
-                    })
+                    elements["secondary_dominants"].append(
+                        {"chord": chord, "target": next_chord, "roman_numeral": "V7/vi"}
+                    )
                 elif chord == "D7" and next_chord == "G" and "C" in key:
-                    elements["secondary_dominants"].append({
-                        "chord": chord,
-                        "target": next_chord,
-                        "roman_numeral": "V7/V"
-                    })
-        
+                    elements["secondary_dominants"].append(
+                        {"chord": chord, "target": next_chord, "roman_numeral": "V7/V"}
+                    )
+
         return elements
 
 

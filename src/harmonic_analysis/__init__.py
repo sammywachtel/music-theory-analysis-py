@@ -7,11 +7,7 @@ algorithms for functional harmony, modal analysis, and chromatic harmony detecti
 __version__ = "0.2.0rc1"
 
 # Main user-facing analysis functions
-from .analysis import (
-    analyze_chord_progression,
-    analyze_melody,
-    analyze_scale,
-)
+from .analysis import analyze_chord_progression, analyze_melody, analyze_scale
 from .core.chromatic_analysis import (
     BorrowedChord,
     ChromaticAnalysisResult,

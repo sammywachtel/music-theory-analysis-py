@@ -45,9 +45,9 @@ class ScaleMelodyAnalysisResult:
 
 class ScaleMelodyAnalyzer:
     """
-    Sophisticated scale and melody analyzer implementing the contextual classification algorithm.
+    Sophisticated scale and melody analyzer implementing contextual classification.
 
-    This analyzer provides the enhanced functionality expected by the comprehensive test framework,
+    This analyzer provides enhanced functionality for the comprehensive test framework,
     including parent scale detection, modal analysis, and contextual classification.
     """
 
@@ -104,7 +104,7 @@ class ScaleMelodyAnalyzer:
         ]
 
     def analyze_scale_melody(
-            self, notes: List[str], key: Optional[str] = None, melody: bool = False
+        self, notes: List[str], key: Optional[str] = None, melody: bool = False
     ) -> ScaleMelodyAnalysisResult:
         """
         Comprehensive scale/melody analysis implementing the 5-step algorithm.
@@ -256,7 +256,7 @@ class ScaleMelodyAnalyzer:
         return non_diatonic
 
     def _classify_scale_usage(
-            self, notes: List[str], key: Optional[str], diatonic_in_key: Optional[bool]
+        self, notes: List[str], key: Optional[str], diatonic_in_key: Optional[bool]
     ) -> str:
         """
         Classify scale usage as diatonic, modal_borrowing, or modal_candidate.
@@ -272,7 +272,7 @@ class ScaleMelodyAnalyzer:
             return "modal_borrowing"
 
     def _generate_modal_labels(
-            self, notes: List[str], parent_scales: List[str]
+        self, notes: List[str], parent_scales: List[str]
     ) -> Dict[str, str]:
         """
         Generate modal labels for all potential tonic centers.
@@ -315,7 +315,7 @@ class ScaleMelodyAnalyzer:
         return modal_labels
 
     def _infer_melody_tonic(
-            self, notes: List[str]
+        self, notes: List[str]
     ) -> Tuple[Optional[str], Optional[float]]:
         """
         Infer the most likely tonic from a melodic sequence.
@@ -351,14 +351,14 @@ class ScaleMelodyAnalyzer:
         return final_root, confidence
 
     def _generate_rationale(
-            self,
-            notes: List[str],
-            key: Optional[str],
-            classification: str,
-            parent_scales: List[str],
-            non_diatonic_pitches: List[str],
-            modal_labels: Dict[str, str],
-            suggested_tonic: Optional[str],
+        self,
+        notes: List[str],
+        key: Optional[str],
+        classification: str,
+        parent_scales: List[str],
+        non_diatonic_pitches: List[str],
+        modal_labels: Dict[str, str],
+        suggested_tonic: Optional[str],
     ) -> str:
         """
         Generate human-readable rationale for the analysis.
@@ -451,7 +451,7 @@ analyzer = ScaleMelodyAnalyzer()
 
 
 def analyze_scale_melody(
-        notes: List[str], key: Optional[str] = None, melody: bool = False
+    notes: List[str], key: Optional[str] = None, melody: bool = False
 ) -> ScaleMelodyAnalysisResult:
     """
     Convenient module-level function for scale/melody analysis.

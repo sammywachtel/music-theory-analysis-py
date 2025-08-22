@@ -8,9 +8,9 @@ generation, chromatic chord detection, and figured bass notation.
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from .chord_logic import ChordMatch
-from .scales import NOTE_TO_PITCH_CLASS
-from .types import ChordFunction, ChromaticType, ProgressionType
+from ..types import ChordFunction, ChromaticType, ProgressionType
+from ..utils.chord_logic import ChordMatch
+from ..utils.scales import NOTE_TO_PITCH_CLASS
 
 # Enhanced Roman numeral templates with chromatic chord support
 FUNCTIONAL_ROMAN_NUMERALS = {
@@ -269,7 +269,7 @@ class FunctionalHarmonyAnalyzer:
     def _parse_chord_symbol(self, symbol: str) -> Optional[Dict[str, Any]]:
         """Parse chord symbol into components."""
         try:
-            from .chord_logic import ChordParser
+            from ..utils.chord_logic import ChordParser
 
             parser = ChordParser()
             chord_match = parser.parse_chord(symbol)

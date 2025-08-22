@@ -6,8 +6,8 @@ import re
 from dataclasses import dataclass
 from typing import List, Optional
 
+from ..types import ChordFunction
 from .scales import NOTE_TO_PITCH_CLASS
-from .types import ChordFunction
 
 
 @dataclass
