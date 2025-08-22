@@ -40,7 +40,7 @@ class MultiLayerTestCase:
     expected_functional: FunctionalExpectation # Roman numerals, key, confidence
     expected_modal: ModalExpectation           # Mode, parent key, local tonic
     expected_chromatic: ChromaticExpectation   # Secondary dominants, borrowed chords
-    expected_ui: UIExpectation                 # Display thresholds, user experience
+    expected_display: DisplayExpectation       # Confidence thresholds, output expectations
     validation_criteria: ValidationCriteria    # Success/failure criteria
 ```
 
@@ -65,7 +65,7 @@ Each test case includes multi-layer expectations:
 - **Functional**: Expected Roman numerals, key center, confidence
 - **Modal**: Expected mode, parent key, local tonic, confidence
 - **Chromatic**: Expected secondary dominants, borrowed chords
-- **UI**: Display thresholds and user experience expectations
+- **Display**: Confidence thresholds and output format expectations
 
 ### Edge Case Behavioral Validation (New)
 **File**: `tests/test_edge_case_behavior.py` - 311 lines of comprehensive behavioral testing
@@ -105,7 +105,7 @@ Tests validate **theoretical accuracy** rather than user preference:
 - Modal tests require specific mode identification and parent key
 - Functional tests require accurate Roman numeral analysis
 - Confidence tests ensure analytical certainty matches evidence strength
-- UI tests verify appropriate display thresholds for different user levels
+- Display tests verify appropriate confidence thresholds for output formatting
 
 ## Development Commands
 

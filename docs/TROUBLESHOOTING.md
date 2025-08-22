@@ -228,41 +228,39 @@ class CustomMultipleInterpretationService(MultipleInterpretationService):
 
 ## Integration Testing Strategies
 
-### Backend Integration Validation
+### Web API Integration Validation
 ```python
-# Test FastAPI integration
+# Test web API integration
 import pytest
-from fastapi.testclient import TestClient
-from your_backend_app import app
+from harmonic_analysis import analyze_progression_multiple
 
-client = TestClient(app)
-
-def test_chord_progression_endpoint():
-    response = client.post(
-        "/analyze-chord-progression/",
-        json={"progression": ["C", "F", "G", "C"]}
-    )
-    assert response.status_code == 200
-    data = response.json()
-    assert "primary_analysis" in data
-    assert data["primary_analysis"]["confidence"] > 0.5
+async def test_api_wrapper():
+    """Test API wrapper function for web services"""
+    progression = ["C", "F", "G", "C"]
+    result = await analyze_progression_multiple(progression)
+    
+    # Verify API response structure
+    assert hasattr(result, 'primary_analysis')
+    assert hasattr(result, 'alternative_analyses')
+    assert hasattr(result, 'metadata')
+    assert result.primary_analysis.confidence > 0.5
 ```
 
-### Frontend Integration Validation
+### Application Integration Validation
 ```python
-# Test TypeScript interface compatibility
-def test_typescript_interface_compatibility():
-    """Ensure Python output matches TypeScript interface expectations"""
+# Test application interface compatibility
+async def test_application_interface_compatibility():
+    """Ensure Python output provides expected data structure"""
     result = await analyze_progression_multiple(['C', 'F', 'G', 'C'])
 
-    # Verify required fields for frontend consumption
+    # Verify required fields for application consumption
     assert hasattr(result.primary_analysis, 'type')
     assert hasattr(result.primary_analysis, 'analysis')
     assert hasattr(result.primary_analysis, 'confidence')
     assert hasattr(result, 'alternative_analyses')
     assert hasattr(result, 'metadata')
 
-    # Verify data types match TypeScript expectations
+    # Verify data types match application expectations
     assert isinstance(result.primary_analysis.confidence, float)
     assert 0.0 <= result.primary_analysis.confidence <= 1.0
 ```

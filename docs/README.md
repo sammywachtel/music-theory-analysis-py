@@ -13,7 +13,7 @@ This directory contains comprehensive documentation for the Harmonic Analysis Py
 ### Specialized Guides
 - **[Troubleshooting](TROUBLESHOOTING.md)** - Common issues, debugging, and advanced usage patterns
 - **[Confidence Calibration](CONFIDENCE_CALIBRATION.md)** - Detailed confidence scoring implementation
-- **[Migration History](MIGRATION_HISTORY.md)** - TypeScript to Python migration and production readiness
+- **[PyPI Setup](PYPI_SETUP.md)** - Guide for automatic PyPI publishing and package distribution
 
 ## Quick Navigation by Topic
 
@@ -37,10 +37,10 @@ This directory contains comprehensive documentation for the Harmonic Analysis Py
 - [Troubleshooting: Performance Optimization](TROUBLESHOOTING.md#performance-optimization)
 - [Troubleshooting: Advanced Usage](TROUBLESHOOTING.md#advanced-usage-patterns)
 
-### Project Context
-- [Migration History: TypeScript to Python Journey](MIGRATION_HISTORY.md#typescrit-to-python-migration-journey)
-- [Migration History: Current Status](MIGRATION_HISTORY.md#current-performance-status-august-2025)
-- [Migration History: Production Readiness](MIGRATION_HISTORY.md#production-readiness-checklist)
+### Project Setup
+- [PyPI Setup: Account and Token Configuration](PYPI_SETUP.md#prerequisites)
+- [PyPI Setup: Automatic Publishing](PYPI_SETUP.md#how-it-works)
+- [PyPI Setup: Testing and Validation](PYPI_SETUP.md#testing-the-setup)
 
 ## Documentation Maintenance
 

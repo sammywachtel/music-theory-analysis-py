@@ -29,8 +29,8 @@ python scripts/generate_comprehensive_multi_layer_tests.py
 ```
 
 **Key Maintenance Tools:**
-- **`scripts/confidence_calibration_analysis.py`**: Essential for confidence calibration and debugging. Used to identify the critical parent key parsing bug that improved functional harmony from 0% to 72% success rate.
-- **`scripts/generate_comprehensive_multi_layer_tests.py`**: Generates 427+ comprehensive test cases with multi-layer expectations. Direct port of frontend TypeScript test generator for behavioral parity.
+- **`scripts/confidence_calibration_analysis.py`**: Essential for confidence calibration and debugging. Used to identify critical bugs that improved functional harmony success rates.
+- **`scripts/generate_comprehensive_multi_layer_tests.py`**: Generates 427+ comprehensive test cases with multi-layer expectations for comprehensive validation.
 
 See `scripts/README.md` for detailed documentation of maintenance scripts.
 
@@ -106,9 +106,9 @@ See `scripts/README.md` for detailed documentation of maintenance scripts.
    ```
 
 3. **Test Expectation Validation**
-   - Review comprehensive test generator logic vs TypeScript frontend
+   - Review comprehensive test generator logic and expectations
    - Identify unrealistic test expectations
-   - Align Python implementation with TypeScript behavioral patterns
+   - Ensure consistent behavioral patterns across test cases
 
 ### Medium-Term Improvements
 
@@ -129,10 +129,10 @@ See `scripts/README.md` for detailed documentation of maintenance scripts.
 
 ### Long-Term Roadmap
 
-7. **Integration Preparation**
-   - Create FastAPI backend integration
-   - Add REST API endpoints for chord progression analysis
-   - Design frontend integration patterns
+7. **Integration Support**
+   - Provide web API integration examples
+   - Add REST API endpoint patterns for chord progression analysis
+   - Design application integration patterns
 
 8. **Advanced Features**
    - Voice leading analysis

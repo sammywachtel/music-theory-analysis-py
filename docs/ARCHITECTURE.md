@@ -158,17 +158,14 @@ Current thresholds based on music theory expert guidance:
 
 ## Integration Considerations
 
-### FastAPI Backend Integration
-The library is designed for seamless FastAPI integration:
+### Web API Integration
+The library is designed for seamless web API integration:
 
 ```python
-from fastapi import FastAPI
 from harmonic_analysis import analyze_progression_multiple
 
-app = FastAPI()
-
-@app.post("/analyze-chord-progression/")
-async def analyze_progression(progression: List[str]):
+# API endpoint implementation
+async def analyze_progression_endpoint(progression: List[str]):
     result = await analyze_progression_multiple(progression)
     return {
         "primary_analysis": result.primary_analysis,
@@ -177,26 +174,19 @@ async def analyze_progression(progression: List[str]):
     }
 ```
 
-### Frontend Integration Pattern
-The library provides structured output for frontend consumption:
+### Application Integration Pattern
+The library provides structured output for application consumption:
 
-```typescript
-// TypeScript interface for frontend consumption
-interface AnalysisResult {
-  primary_analysis: {
-    type: "functional" | "modal" | "chromatic";
-    analysis: string;
-    confidence: number;
-    roman_numerals?: string;
-    key_signature?: string;
-    mode?: string;
-    evidence: AnalysisEvidence[];
-  };
-  alternative_analyses: AlternativeAnalysis[];
-  metadata: {
-    total_interpretations_considered: number;
-    show_alternatives: boolean;
-    analysis_time_ms: number;
-  };
+```python
+# Structured data access
+result = await analyze_progression_multiple(['C', 'F', 'G', 'C'])
+
+# Extract key information
+analysis_summary = {
+    "type": result.primary_analysis.type,
+    "analysis": result.primary_analysis.analysis, 
+    "confidence": result.primary_analysis.confidence,
+    "key_signature": result.primary_analysis.key_signature,
+    "evidence_count": len(result.primary_analysis.evidence)
 }
 ```

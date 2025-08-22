@@ -49,17 +49,14 @@ for evidence in result.primary_analysis.evidence:
 
 ## Integration Patterns
 
-### FastAPI Backend Integration
-The library is designed for seamless FastAPI integration:
+### Web API Integration
+The library is designed for seamless web API integration:
 
 ```python
-from fastapi import FastAPI
 from harmonic_analysis import analyze_progression_multiple
 
-app = FastAPI()
-
-@app.post("/analyze-chord-progression/")
-async def analyze_progression(progression: List[str]):
+# Simple REST endpoint integration
+async def analyze_progression_endpoint(progression: List[str]):
     result = await analyze_progression_multiple(progression)
     return {
         "primary_analysis": result.primary_analysis,
@@ -68,43 +65,38 @@ async def analyze_progression(progression: List[str]):
     }
 ```
 
-### Frontend Integration Pattern
-The library provides structured output for frontend consumption:
+### Application Integration
+The library provides structured output for application consumption:
 
-```typescript
-// TypeScript interface for frontend consumption
-interface AnalysisResult {
-  primary_analysis: {
-    type: "functional" | "modal" | "chromatic";
-    analysis: string;
-    confidence: number;
-    roman_numerals?: string;
-    key_signature?: string;
-    mode?: string;
-    evidence: AnalysisEvidence[];
-  };
-  alternative_analyses: AlternativeAnalysis[];
-  metadata: {
-    total_interpretations_considered: number;
-    show_alternatives: boolean;
-    analysis_time_ms: number;
-  };
+```python
+# Structured output for application integration
+result = await analyze_progression_multiple(['C', 'F', 'G', 'C'])
+
+# Access structured data
+analysis_data = {
+    "type": result.primary_analysis.type,
+    "analysis": result.primary_analysis.analysis,
+    "confidence": result.primary_analysis.confidence,
+    "roman_numerals": result.primary_analysis.roman_numerals,
+    "key_signature": result.primary_analysis.key_signature,
+    "evidence": [e.description for e in result.primary_analysis.evidence]
 }
 ```
 
 ## Library Purpose and Intended Usage
 
 ### Primary Use Case
-This library serves as the **backend analysis engine** for a comprehensive harmonic analysis application. It analyzes chord progressions to provide:
+This library provides comprehensive harmonic analysis capabilities for chord progressions, offering:
 
 1. **Multiple Analytical Perspectives**: Functional harmony, modal analysis, and chromatic harmony
 2. **Educational Context**: Explanations suitable for different pedagogical levels (beginner/intermediate/advanced)
-3. **Confidence-Based Results**: Analytical certainty scores to guide user experience
+3. **Confidence-Based Results**: Analytical certainty scores to guide decision making
 4. **Evidence-Based Reasoning**: Detailed justification for analytical conclusions
 
-### Integration Pattern
-The library is designed to be consumed by:
-- **FastAPI Backend**: REST endpoints for harmonic progression analysis
-- **Frontend Applications**: React/TypeScript harmonic analysis tools
-- **Educational Software**: Music theory and harmonic analysis learning applications
-- **Analysis Tools**: Standalone harmonic analysis utilities
+### Integration Use Cases
+The library is designed for:
+- **Web Applications**: REST API endpoints for harmonic progression analysis
+- **Music Software**: Integration into music theory and composition tools
+- **Educational Applications**: Music theory learning and analysis applications
+- **Research Tools**: Academic and professional harmonic analysis utilities
+- **Command Line Tools**: Standalone harmonic analysis scripts
