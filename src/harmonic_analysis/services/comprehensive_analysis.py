@@ -5,12 +5,11 @@ Comprehensive analysis engine coordinating functional, modal, and chromatic anal
 from dataclasses import dataclass
 from typing import List, Literal, Optional
 
-from ..core.functional_harmony import (
-    FunctionalAnalysisResult,
-    FunctionalHarmonyAnalyzer,
-)
+from ..core.functional_harmony import (FunctionalAnalysisResult,
+                                       FunctionalHarmonyAnalyzer)
 from ..core.modal_analysis import EnhancedModalAnalyzer, ModalAnalysisResult
-from ..types import AnalysisOptions, MultipleInterpretationResult, UserInputContext
+from ..types import (AnalysisOptions, MultipleInterpretationResult,
+                     UserInputContext)
 from ..utils.chord_logic import parse_chord_progression
 
 

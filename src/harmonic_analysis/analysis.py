@@ -7,10 +7,10 @@ scale analysis, and melody analysis.
 
 from typing import List, Optional
 
-from .scale_melody_analysis import analyze_scale_melody as _analyze_scale_melody
-from .services.multiple_interpretation_service import (
-    analyze_progression_multiple as _analyze_progression_multiple,
-)
+from .scale_melody_analysis import \
+    analyze_scale_melody as _analyze_scale_melody
+from .services.multiple_interpretation_service import \
+    analyze_progression_multiple as _analyze_progression_multiple
 from .types import AnalysisOptions
 
 

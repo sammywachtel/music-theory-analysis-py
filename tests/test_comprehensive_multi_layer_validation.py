@@ -10,18 +10,13 @@ and UI behavior expectations to ensure behavioral parity.
 
 import pytest
 
-from harmonic_analysis import (
-    AnalysisOptions,
-    ChromaticAnalyzer,
-    EnhancedModalAnalyzer,
-    FunctionalHarmonyAnalyzer,
-    MultipleInterpretationService,
-    analyze_progression_multiple,
-)
+from harmonic_analysis import (AnalysisOptions, ChromaticAnalyzer,
+                               EnhancedModalAnalyzer,
+                               FunctionalHarmonyAnalyzer,
+                               MultipleInterpretationService,
+                               analyze_progression_multiple)
 from scripts.generate_comprehensive_multi_layer_tests import (
-    ComprehensiveMultiLayerGenerator,
-    MultiLayerTestCase,
-)
+    ComprehensiveMultiLayerGenerator, MultiLayerTestCase)
 
 
 class TestComprehensiveMultiLayerValidation:

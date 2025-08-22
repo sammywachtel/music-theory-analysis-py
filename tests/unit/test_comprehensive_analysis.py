@@ -5,9 +5,7 @@ Unit tests for comprehensive analysis engine.
 import pytest
 
 from harmonic_analysis.services.comprehensive_analysis import (
-    ComprehensiveAnalysisEngine,
-    ComprehensiveAnalysisResult,
-)
+    ComprehensiveAnalysisEngine, ComprehensiveAnalysisResult)
 
 
 class TestComprehensiveAnalysisEngine:

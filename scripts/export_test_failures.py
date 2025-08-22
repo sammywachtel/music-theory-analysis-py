@@ -16,7 +16,8 @@ from typing import Any, Dict, List
 sys.path.append(str(Path(__file__).parent.parent / "src"))
 
 from harmonic_analysis import analyze_progression_multiple
-from harmonic_analysis.multiple_interpretation_service import InterpretationType
+from harmonic_analysis.multiple_interpretation_service import \
+    InterpretationType
 from harmonic_analysis.types import AnalysisOptions
 
 

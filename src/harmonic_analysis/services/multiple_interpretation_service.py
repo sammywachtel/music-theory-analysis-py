@@ -21,11 +21,10 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, List, Optional
 
-from ..core.enhanced_modal_analyzer import EnhancedModalAnalyzer, ModalAnalysisResult
-from ..core.functional_harmony import (
-    FunctionalAnalysisResult,
-    FunctionalHarmonyAnalyzer,
-)
+from ..core.enhanced_modal_analyzer import (EnhancedModalAnalyzer,
+                                            ModalAnalysisResult)
+from ..core.functional_harmony import (FunctionalAnalysisResult,
+                                       FunctionalHarmonyAnalyzer)
 from ..types import AnalysisOptions
 
 

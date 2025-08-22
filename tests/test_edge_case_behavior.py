@@ -17,11 +17,9 @@ import pytest
 
 from harmonic_analysis import analyze_progression_multiple
 
-from .edge_case_warnings import (
-    print_edge_case_summary,
-    soft_assert_with_warning,
-    warn_edge_case_behavior,
-)
+from .edge_case_warnings import (print_edge_case_summary,
+                                 soft_assert_with_warning,
+                                 warn_edge_case_behavior)
 
 
 class EdgeCaseType(Enum):

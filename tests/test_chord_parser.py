@@ -9,12 +9,8 @@ Tests comprehensive chord parsing and detection including:
 - Inversion detection
 """
 
-from harmonic_analysis import (
-    ChordParser,
-    find_chords_from_midi,
-    parse_chord,
-    parse_chord_progression,
-)
+from harmonic_analysis import (ChordParser, find_chords_from_midi, parse_chord,
+                               parse_chord_progression)
 
 
 class TestChordParser:
