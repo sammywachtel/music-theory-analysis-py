@@ -1,14 +1,76 @@
-"""
-Music Theory Analysis Library
+"""Music Theory Analysis Library.
 
 A comprehensive Python library for music theory analysis, providing sophisticated
 algorithms for functional harmony, modal analysis, and chromatic harmony detection.
 """
 
-__version__ = "0.1.0b4"
+__version__ = "0.2.0rc1"
 
-# Chord logic and parsing
-from .chord_parser import (
+# Main user-facing analysis functions
+from .analysis import (
+    analyze_chord_progression,
+    analyze_melody,
+    analyze_scale,
+)
+from .core.chromatic_analysis import (
+    BorrowedChord,
+    ChromaticAnalysisResult,
+    ChromaticAnalyzer,
+    ChromaticMediant,
+    ResolutionPattern,
+    ResolutionType,
+    SecondaryDominant,
+    analyze_chromatic_harmony,
+)
+
+# Core analysis engines (for advanced users)
+from .core.enhanced_modal_analyzer import (
+    ChordAnalysis,
+    EnhancedModalAnalyzer,
+    EvidenceType,
+    ModalAnalysisResult,
+    ModalEvidence,
+    ModalPattern,
+    PatternContext,
+    analyze_modal_progression,
+)
+from .core.functional_harmony import (
+    Cadence,
+    ChordFunction,
+    ChromaticType,
+    FunctionalAnalysisResult,
+    FunctionalChordAnalysis,
+    FunctionalHarmonyAnalyzer,
+    ProgressionType,
+)
+from .scale_melody_analysis import (
+    ScaleMelodyAnalysisResult,
+    ScaleMelodyAnalyzer,
+    analyze_scale_melody,
+)
+
+# Services
+from .services.comprehensive_analysis import (
+    ComprehensiveAnalysisEngine,
+    ComprehensiveAnalysisResult,
+    ModalEnhancementResult,
+)
+from .services.multiple_interpretation_service import (
+    AlternativeAnalysis,
+    AnalysisEvidence,
+    InterpretationAnalysis,
+    InterpretationType,
+    MultipleInterpretationService,
+    PedagogicalLevel,
+    analyze_progression_multiple,
+    multiple_interpretation_service,
+)
+
+# Core analysis types and results
+from .types import AnalysisOptions, UserInputContext
+
+# Utilities (for advanced users)
+from .utils.chord_parser import (
     NOTE_NAMES,
     NOTE_NAMES_FLAT,
     NOTE_NAMES_SHARP,
@@ -20,103 +82,67 @@ from .chord_parser import (
     parse_chord,
     parse_chord_progression,
 )
-
-# Chromatic analysis
-from .chromatic_analysis import (
-    BorrowedChord,
-    ChromaticAnalysisResult,
-    ChromaticAnalyzer,
-    ChromaticMediant,
-    ResolutionPattern,
-    ResolutionType,
-    SecondaryDominant,
-    analyze_chromatic_harmony,
+from .utils.scales import (
+    MAJOR_SCALE_MODES,
+    MODAL_PARENT_KEYS,
+    PITCH_CLASS_NAMES,
+    ScaleData,
 )
-
-# Core analysis engines
-from .comprehensive_analysis import (
-    ComprehensiveAnalysisEngine,
-    ComprehensiveAnalysisResult,
-    ModalEnhancementResult,
-)
-
-# Modal analysis
-from .enhanced_modal_analyzer import (
-    ChordAnalysis,
-    EnhancedModalAnalyzer,
-    EvidenceType,
-    ModalAnalysisResult,
-    ModalEvidence,
-    ModalPattern,
-    PatternContext,
-    analyze_modal_progression,
-)
-
-# Functional harmony analysis
-from .functional_harmony import (
-    Cadence,
-    ChordFunction,
-    ChromaticType,
-    FunctionalAnalysisResult,
-    FunctionalChordAnalysis,
-    FunctionalHarmonyAnalyzer,
-    ProgressionType,
-)
-
-# Multiple interpretation service
-from .multiple_interpretation_service import (
-    AlternativeAnalysis,
-    AnalysisEvidence,
-    InterpretationAnalysis,
-    InterpretationType,
-    MultipleInterpretationService,
-    PedagogicalLevel,
-    analyze_progression_multiple,
-    multiple_interpretation_service,
-)
-
-# Scale data and constants
-from .scales import MAJOR_SCALE_MODES, MODAL_PARENT_KEYS, PITCH_CLASS_NAMES, ScaleData
-
-# Types and interfaces
-from .types import AnalysisOptions, UserInputContext
 
 __all__ = [
     # Version
     "__version__",
-    # Core analysis
-    "ComprehensiveAnalysisEngine",
-    "ComprehensiveAnalysisResult",
-    "ModalEnhancementResult",
-    # Functional harmony
-    "FunctionalHarmonyAnalyzer",
-    "FunctionalAnalysisResult",
-    "FunctionalChordAnalysis",
-    "ChordFunction",
-    "ChromaticType",
-    "ProgressionType",
-    "Cadence",
-    # Modal analysis
+    # Main API functions
+    "analyze_chord_progression",
+    "analyze_melody",
+    "analyze_scale",
+    # Core types
+    "AnalysisOptions",
+    "UserInputContext",
+    # Multiple interpretation service
+    "AlternativeAnalysis",
+    "AnalysisEvidence",
+    "InterpretationAnalysis",
+    "InterpretationType",
+    "MultipleInterpretationService",
+    "PedagogicalLevel",
+    "analyze_progression_multiple",
+    "multiple_interpretation_service",
+    # Scale/melody analysis
+    "ScaleMelodyAnalysisResult",
+    "ScaleMelodyAnalyzer",
+    "analyze_scale_melody",
+    # Core analysis engines
+    "ChordAnalysis",
     "EnhancedModalAnalyzer",
+    "EvidenceType",
     "ModalAnalysisResult",
     "ModalEvidence",
-    "EvidenceType",
-    "PatternContext",
     "ModalPattern",
-    "ChordAnalysis",
+    "PatternContext",
     "analyze_modal_progression",
-    # Chromatic analysis
-    "ChromaticAnalyzer",
-    "ChromaticAnalysisResult",
-    "SecondaryDominant",
+    "Cadence",
+    "ChordFunction",
+    "ChromaticType",
+    "FunctionalAnalysisResult",
+    "FunctionalChordAnalysis",
+    "FunctionalHarmonyAnalyzer",
+    "ProgressionType",
     "BorrowedChord",
+    "ChromaticAnalysisResult",
+    "ChromaticAnalyzer",
     "ChromaticMediant",
     "ResolutionPattern",
     "ResolutionType",
+    "SecondaryDominant",
     "analyze_chromatic_harmony",
-    # Chord logic
-    "ChordParser",
+    # Services
+    "ComprehensiveAnalysisEngine",
+    "ComprehensiveAnalysisResult",
+    "ModalEnhancementResult",
+    # Utilities
     "ChordMatch",
+    "ChordParser",
     "ChordTemplate",
     "parse_chord_progression",
     "find_chords_from_midi",
@@ -125,21 +151,8 @@ __all__ = [
     "NOTE_NAMES",
     "NOTE_NAMES_SHARP",
     "NOTE_NAMES_FLAT",
-    # Scale data
     "ScaleData",
     "MAJOR_SCALE_MODES",
     "MODAL_PARENT_KEYS",
     "PITCH_CLASS_NAMES",
-    # Multiple interpretation service
-    "MultipleInterpretationService",
-    "InterpretationAnalysis",
-    "AlternativeAnalysis",
-    "AnalysisEvidence",
-    "InterpretationType",
-    "PedagogicalLevel",
-    "analyze_progression_multiple",
-    "multiple_interpretation_service",
-    # Types
-    "UserInputContext",
-    "AnalysisOptions",
 ]

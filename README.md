@@ -21,6 +21,73 @@ pip install harmonic-analysis
 
 ## Quick Start
 
+### Python API
+
+The library provides an intuitive API with main functions at the top level:
+
+```python
+import asyncio
+from harmonic_analysis import (
+    analyze_chord_progression,
+    analyze_scale,
+    analyze_melody,
+    AnalysisOptions
+)
+
+# Simple chord progression analysis
+async def main():
+    result = await analyze_chord_progression(['C', 'Am', 'F', 'G'])
+    print(f"Primary: {result.primary_analysis.type.value}")
+    print(f"Analysis: {result.primary_analysis.analysis}")
+    print(f"Confidence: {result.primary_analysis.confidence:.2f}")
+
+    # Scale analysis
+    scale_result = await analyze_scale(['C', 'D', 'E', 'F', 'G', 'A', 'B'])
+    print(f"Scale: {scale_result.primary_analysis.analysis}")
+
+    # Melody analysis
+    melody_result = await analyze_melody(['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C'])
+    print(f"Melody: {melody_result.primary_analysis.analysis}")
+
+asyncio.run(main())
+```
+
+### Advanced Analysis with Options
+
+```python
+from harmonic_analysis import analyze_chord_progression, AnalysisOptions
+
+# Enhanced analysis with options
+options = AnalysisOptions(
+    parent_key="C major",
+    pedagogical_level="intermediate",
+    confidence_threshold=0.6
+)
+
+result = await analyze_chord_progression(['C', 'Am', 'F', 'G'], options)
+
+# Access detailed results
+print(f"Roman numerals: {result.primary_analysis.roman_numerals}")
+print(f"Evidence count: {len(result.primary_analysis.evidence)}")
+
+# Multiple interpretations with confidence-based ranking
+for i, alt in enumerate(result.alternative_analyses):
+    print(f"Alternative {i+1}: {alt.type.value} (confidence: {alt.confidence:.2f})")
+    print(f"  {alt.analysis}")
+```
+
+### Legacy API Support
+
+For compatibility with existing code, the library maintains the original API:
+
+```python
+from harmonic_analysis import analyze_progression_multiple, AnalysisOptions
+
+# Original API still works
+result = await analyze_progression_multiple(['C', 'Am', 'F', 'G'])
+print(f"Analysis: {result.primary_analysis.analysis}")
+```
+
 ### Interactive Demo (Optional)
 
 Experience the library immediately with the included React demo:
@@ -33,37 +100,6 @@ npm start
 ```
 
 Opens http://localhost:3010 with a full-featured demo showing ALL library parameters.
-
-### Python API
-
-```python
-from harmonic_analysis import analyze_progression_multiple, AnalysisOptions
-
-# Simple analysis with calibrated confidence scoring
-result = await analyze_progression_multiple(['C', 'Am', 'F', 'G'])
-
-print(f"Primary: {result.primary_analysis.type.value}")
-print(f"Analysis: {result.primary_analysis.analysis}")
-print(f"Confidence: {result.primary_analysis.confidence:.2f}")
-
-# Analysis with options for enhanced results
-options = AnalysisOptions(
-    parent_key="C major",
-    pedagogical_level="intermediate",
-    confidence_threshold=0.6
-)
-
-result = await analyze_progression_multiple(['C', 'Am', 'F', 'G'], options)
-
-# Access detailed results
-print(f"Roman numerals: {result.primary_analysis.roman_numerals}")
-print(f"Evidence count: {len(result.primary_analysis.evidence)}")
-
-# Multiple interpretations with confidence-based ranking
-for i, alt in enumerate(result.alternative_analyses):
-    print(f"Alternative {i+1}: {alt.type.value} (confidence: {alt.confidence:.2f})")
-    print(f"  {alt.analysis}")
-```
 
 ## Core Concepts
 
@@ -87,7 +123,38 @@ This approach ensures theoretically sound and pedagogically valuable modal analy
 
 ## API Reference
 
-### Core Classes
+### Main API Functions
+
+The library provides intuitive main functions for different types of analysis:
+
+#### `analyze_chord_progression(chords, options=None)`
+
+Analyze a chord progression with multiple interpretations.
+
+```python
+result = await analyze_chord_progression(['C', 'F', 'G', 'C'])
+# Returns: MultipleInterpretationResult
+```
+
+#### `analyze_scale(notes, parent_key=None)`
+
+Analyze a scale or note sequence.
+
+```python
+result = await analyze_scale(['C', 'D', 'E', 'F', 'G', 'A', 'B'])
+# Returns: ScaleMelodyAnalysisResult formatted for display
+```
+
+#### `analyze_melody(notes, parent_key=None)`
+
+Analyze a melodic sequence.
+
+```python
+result = await analyze_melody(['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C'])
+# Returns: ScaleMelodyAnalysisResult formatted for display
+```
+
+### Core Analysis Engines
 
 #### `ComprehensiveAnalysisEngine`
 
@@ -113,6 +180,15 @@ Advanced modal analysis with evidence-based confidence scoring.
 **Methods:**
 
 - `analyze_modal_characteristics(chord_symbols: List[str], parent_key: str = None) -> ModalAnalysisResult`
+
+### Library Organization
+
+The library is organized with user-facing functions at the top level and implementation details in subdirectories:
+
+- **Main API**: `analyze_chord_progression()`, `analyze_scale()`, `analyze_melody()`
+- **Core engines**: `harmonic_analysis.core.*` - Analysis engines (modal, functional, chromatic)
+- **Services**: `harmonic_analysis.services.*` - Orchestration and comprehensive analysis
+- **Utils**: `harmonic_analysis.utils.*` - Chord parsing, scales, and utility functions
 
 ### Data Structures
 
@@ -290,6 +366,16 @@ git push origin feature/your-feature
 # 6. Automated CI/CD handles testing and release
 # (On merge to main, if version incremented)
 ```
+
+### Recent Major Update (v0.2.0)
+
+The library has been significantly reorganized for better usability:
+
+- **🎯 Intuitive API**: Main functions (`analyze_chord_progression`, `analyze_scale`, `analyze_melody`) at top level
+- **📁 Clean Architecture**: Core engines, services, and utilities properly organized in subdirectories
+- **🔄 Maintained Compatibility**: All existing APIs continue to work
+- **🎨 Separated Concerns**: Analysis logic cleanly separated from presentation/formatting
+- **📚 Enhanced Documentation**: Updated examples and comprehensive API reference
 
 ### IDE Integration
 
