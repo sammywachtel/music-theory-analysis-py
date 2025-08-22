@@ -23,6 +23,17 @@ export class MusicTheoryAppPage {
   readonly keyCenter: Locator;
   readonly modeDisplay: Locator;
 
+  // Enhanced analysis fields
+  readonly modalCharacteristics: Locator;
+  readonly parentKeyRelationship: Locator;
+  readonly secondaryDominants: Locator;
+  readonly borrowedChords: Locator;
+  readonly chromaticMediants: Locator;
+  readonly cadences: Locator;
+  readonly chordFunctions: Locator;
+  readonly contextualClassification: Locator;
+  readonly confidenceBreakdown: Locator;
+
   // UI state indicators
   readonly loadingSpinner: Locator;
   readonly errorMessage: Locator;
@@ -50,6 +61,17 @@ export class MusicTheoryAppPage {
     this.romanNumerals = page.locator('[data-testid="roman-numerals"]');
     this.keyCenter = page.locator('[data-testid="key-center"]');
     this.modeDisplay = page.locator('[data-testid="mode-display"]');
+
+    // Enhanced analysis fields
+    this.modalCharacteristics = page.locator('.modal-characteristics');
+    this.parentKeyRelationship = page.locator('.parent-key-relationship');
+    this.secondaryDominants = page.locator('.secondary-dominants');
+    this.borrowedChords = page.locator('.borrowed-chords');
+    this.chromaticMediants = page.locator('.chromatic-mediants');
+    this.cadences = page.locator('.cadences');
+    this.chordFunctions = page.locator('.chord-functions');
+    this.contextualClassification = page.locator('.contextual-classification');
+    this.confidenceBreakdown = page.locator('.confidence-breakdown');
 
     // UI state indicators
     this.loadingSpinner = page.locator('[data-testid="loading-spinner"]');
@@ -189,6 +211,94 @@ export class MusicTheoryAppPage {
     await this.clearButton.click();
     await expect(this.chordProgressionInput).toHaveValue('');
     await expect(this.resultsPanel).not.toBeVisible();
+  }
+
+  // Enhanced analysis expectation methods
+  async expectModalCharacteristics(expectedCharacteristics: string[]) {
+    await expect(this.modalCharacteristics).toBeVisible();
+    const characteristicsText = await this.modalCharacteristics.textContent();
+    for (const characteristic of expectedCharacteristics) {
+      expect(characteristicsText).toContain(characteristic);
+    }
+  }
+
+  async expectParentKeyRelationship(relationship: 'matches' | 'conflicts') {
+    await expect(this.parentKeyRelationship).toBeVisible();
+    const relationshipText = await this.parentKeyRelationship.textContent();
+    expect(relationshipText?.toLowerCase()).toContain(relationship.toLowerCase());
+  }
+
+  async expectSecondaryDominants(expectedDominants: Array<{chord: string, target: string, roman?: string}>) {
+    await expect(this.secondaryDominants).toBeVisible();
+    const dominantsText = await this.secondaryDominants.textContent();
+    
+    for (const dominant of expectedDominants) {
+      expect(dominantsText).toContain(dominant.chord);
+      expect(dominantsText).toContain(dominant.target);
+      if (dominant.roman) {
+        expect(dominantsText).toContain(dominant.roman);
+      }
+    }
+  }
+
+  async expectBorrowedChords(expectedBorrowed: Array<{chord: string, origin?: string}>) {
+    await expect(this.borrowedChords).toBeVisible();
+    const borrowedText = await this.borrowedChords.textContent();
+    
+    for (const borrowed of expectedBorrowed) {
+      expect(borrowedText).toContain(borrowed.chord);
+    }
+  }
+
+  async expectCadences(expectedCadences: Array<{type: string, chords?: string}>) {
+    await expect(this.cadences).toBeVisible();
+    const cadencesText = await this.cadences.textContent();
+    
+    for (const cadence of expectedCadences) {
+      expect(cadencesText?.toLowerCase()).toContain(cadence.type.toLowerCase());
+    }
+  }
+
+  async expectChordFunctions(expectedFunctions: string[]) {
+    await expect(this.chordFunctions).toBeVisible();
+    const functionsText = await this.chordFunctions.textContent();
+    
+    for (const func of expectedFunctions) {
+      expect(functionsText?.toLowerCase()).toContain(func.toLowerCase());
+    }
+  }
+
+  async expectContextualClassification(classification: 'diatonic' | 'modal_borrowing' | 'modal_candidate') {
+    await expect(this.contextualClassification).toBeVisible();
+    const classificationText = await this.contextualClassification.textContent();
+    const expectedText = classification.replace('_', ' ');
+    expect(classificationText?.toLowerCase()).toContain(expectedText.toLowerCase());
+  }
+
+  async expectConfidenceBreakdown(expectedConfidences: {functional?: number, modal?: number, chromatic?: number}) {
+    await expect(this.confidenceBreakdown).toBeVisible();
+    const breakdownText = await this.confidenceBreakdown.textContent();
+    
+    if (expectedConfidences.functional !== undefined) {
+      expect(breakdownText).toContain('Functional');
+      // Extract functional confidence and verify it's in reasonable range
+      const functionalMatch = breakdownText?.match(/Functional:\s*([\d.]+)/);
+      if (functionalMatch) {
+        const confidence = parseFloat(functionalMatch[1]);
+        expect(confidence).toBeGreaterThanOrEqual(expectedConfidences.functional - 0.15);
+        expect(confidence).toBeLessThanOrEqual(expectedConfidences.functional + 0.15);
+      }
+    }
+
+    if (expectedConfidences.modal !== undefined) {
+      expect(breakdownText).toContain('Modal');
+      const modalMatch = breakdownText?.match(/Modal:\s*([\d.]+)/);
+      if (modalMatch) {
+        const confidence = parseFloat(modalMatch[1]);
+        expect(confidence).toBeGreaterThanOrEqual(expectedConfidences.modal - 0.15);
+        expect(confidence).toBeLessThanOrEqual(expectedConfidences.modal + 0.15);
+      }
+    }
   }
 
   // Interaction testing methods

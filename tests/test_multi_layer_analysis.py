@@ -22,6 +22,7 @@ import pytest
 from harmonic_analysis.multiple_interpretation_service import (
     analyze_progression_multiple,
 )
+from harmonic_analysis.scale_melody_analysis import analyze_scale_melody
 from harmonic_analysis.types import AnalysisOptions
 
 
@@ -183,6 +184,7 @@ class TestMultiLayerAnalysis:
                 ), "Secondary dominant should have Roman numeral"
 
     @pytest.mark.asyncio
+    @pytest.mark.xfail(reason="Framework not yet implemented")
     async def test_contextual_classification(self):
         """Test contextual classification (diatonic vs modal borrowing)"""
         # Test diatonic case
@@ -236,6 +238,7 @@ class TestMultiLayerAnalysis:
             ), f"Expected modal_borrowing, got {classification}"
 
     @pytest.mark.asyncio
+    @pytest.mark.xfail(reason="Framework not yet implemented")
     async def test_ui_behavior_expectations(self):
         """Test UI behavior matches expectations"""
         # Get a test case with multiple analyses expected
@@ -278,6 +281,7 @@ class TestMultiLayerAnalysis:
         ), f"Primary interpretation '{primary}' not in allowed list {allowed_primaries}"
 
     @pytest.mark.asyncio
+    @pytest.mark.xfail(reason="Framework not yet implemented")
     async def test_confidence_calibration(self):
         """Test that confidence scores are properly calibrated"""
         # Test across different categories
@@ -449,46 +453,9 @@ class TestMultiLayerAnalysis:
     def _analyze_scale_with_enhanced_expectations(
         self, notes: List[str], key: str = None
     ):
-        """Enhanced placeholder for scale analysis matching generated test expectations"""
-
-        # This represents the enhanced scale/melody analysis framework
-        class EnhancedScaleResult:
-            def __init__(self, notes, key):
-                self.notes = notes
-                self.key = key
-
-                # Parent scale detection (simplified logic)
-                self.parent_scales = ["C major", "A minor"]  # Would be computed
-
-                # Diatonic fitness test
-                if key:
-                    # Simplified: check if it's C major context for the test case
-                    self.diatonic_in_key = "C major" in key
-                else:
-                    self.diatonic_in_key = None
-
-                # Contextual classification using your algorithm
-                if key is None:
-                    self.classification = "modal_candidate"
-                elif self.diatonic_in_key:
-                    self.classification = "diatonic"
-                else:
-                    self.classification = "modal_borrowing"
-
-                # Modal labels for different tonic centers
-                self.modal_labels = {"D": "D Dorian", "A": "A Aeolian", "C": "C Ionian"}
-
-                # Non-diatonic pitches (if any)
-                self.non_diatonic_pitches = []
-
-                # Analysis rationale
-                self.rationale = f"Scale analysis: {len(notes)} notes, key context: {key or 'none'}, classification: {self.classification}"
-
-                # Melody-specific fields (if needed)
-                self.suggested_tonic = None
-                self.confidence = None
-
-        return EnhancedScaleResult(notes, key)
+        """Real scale analysis using the implemented framework"""
+        # Use the real scale/melody analysis framework
+        return analyze_scale_melody(notes=notes, key=key, melody=False)
 
     def _analyze_scale_with_context(self, notes: List[str], key: str = None):
         """Backward compatibility method"""
@@ -616,7 +583,7 @@ class TestChromaticAnalysisFramework:
             ), f"Expected Dm target, got {secondary['target']}"
 
 
-# Mark all tests as expected to fail initially
-pytestmark = pytest.mark.xfail(
-    reason="These tests define the new framework - should fail until implementation"
-)
+# Mark most tests as expected to fail initially (except scale_melody_expectations which passes)
+# pytestmark = pytest.mark.xfail(
+#     reason="These tests define the new framework - should fail until implementation"
+# )

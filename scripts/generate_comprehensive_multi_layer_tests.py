@@ -1136,6 +1136,9 @@ class ComprehensiveMultiLayerGenerator:
         labels: Dict[str, str] = {}
         parents = self._parent_scales_of(notes)
         for p in parents:
+            # Only process major scales for modal analysis
+            if not p.endswith(" major"):
+                continue
             p_root = p.split()[0]
             # build major scale degrees for parent
             degs = [(self.note_map[p_root] + iv) % 12 for iv in [0, 2, 4, 5, 7, 9, 11]]

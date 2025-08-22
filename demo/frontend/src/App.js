@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import './App.css';
 
 function App() {
@@ -23,24 +23,42 @@ function App() {
             {input: 'F Bb C F', key: 'F major', description: 'I-IV-V-I in F major'},
         ],
         scale: [
-            {input: 'C major scale', key: '', description: 'Ionian mode'},
-            {input: 'G Mixolydian', key: 'C major', description: 'Fifth mode of C major'},
-            {input: 'A harmonic minor', key: '', description: 'Harmonic minor scale'},
-            {input: 'D Dorian', key: 'C major', description: 'Second mode of C major'},
-            {input: 'E Phrygian', key: 'C major', description: 'Third mode of C major'},
-            {input: 'F# Locrian', key: 'G major', description: 'Seventh mode of G major'},
-        ],
-        melody: [
             {input: 'C D E F G A B C', key: 'C major', description: 'C major scale melody'},
             {input: 'E F# G A B C# D E', key: 'D major', description: 'E Dorian melody'},
             {input: 'G A Bb C D Eb F G', key: 'Bb major', description: 'G Dorian melody'},
             {input: 'A B C D E F G A', key: 'C major', description: 'A Aeolian melody'},
             {input: 'F G Ab Bb C Db Eb F', key: 'Db major', description: 'F Aeolian melody'},
+        ],
+        melody: [
+            {
+                input: "C E G A G F E D C D E F G A G F E C",
+                key: "C major",
+                description: "A bright ascending melody starting on the tonic (C), leaping up to the fifth and sixth for a joyful feeling, then gently stepping down. It outlines C major clearly, singable like a folk tune."
+            },
+            {
+                input: "E F# G A B A G F# E G A B A G F# E",
+                key: "D major (E Dorian)",
+                description: "A modal folk-like tune: begins with stepwise ascent, peaks on B (the 5th of the mode), and falls back to E. The raised 6th (C# in D major, though not used here) gives it that hopeful Dorian brightness."
+            },
+            {
+                input: "G A Bb C D F Eb D C Bb A G",
+                key: "F major (G Dorian)",
+                description: "Dark, jazzy minor flavor with a touch of brightness. The Bb and Eb define the mode, but the raised 6th (E natural) could be added for more Dorian color. Sounds like a moody medieval dance or film score fragment."
+            },
+            {
+                input: "A C D E F G E D C D E F G F E D A",
+                key: "C major (A Aeolian)",
+                description: "A plaintive minor melody with a sighing contour. Begins on the tonic A, climbs to G, then resolves downward, evoking a lament or folk ballad."
+            },
+            {
+                input: "F G Ab Bb C Db C Bb Ab G F",
+                key: "Ab major (F Aeolian)",
+                description: "A flowing, stepwise melody in natural minor. It ascends gently from the tonic (F) to the 4th (Bb), touches the 5th and flat 6th (C–Db) for color, then resolves downward to F. Sounds mournful, like a folk lament."
+            },
         ]
     };
 
     const [currentExampleIndex, setCurrentExampleIndex] = useState(0);
-    const currentExampleIndexRef = useRef(0);
 
     const analysisTypes = [
         {id: 'progression', label: 'Chord Progression', placeholder: 'Enter chord symbols (e.g., C Am F G)', icon: '🎵'},
@@ -141,7 +159,7 @@ function App() {
 
         try {
             const endpoint = analysisType === 'progression' ? '/api/analyze' :
-                            analysisType === 'scale' ? '/api/analyze-scale' : '/api/analyze-melody';
+                analysisType === 'scale' ? '/api/analyze-scale' : '/api/analyze-melody';
 
             let requestBody;
             if (analysisType === 'progression') {
@@ -352,8 +370,9 @@ function App() {
                 </div>
 
                 <div className="help-text">
-                    <div>💡 <strong>Tab:</strong> Cycle through {analysisType} examples (click outside inputs first) | <strong>Shift+Tab:</strong> Works anywhere
-                        | <strong>Enter:</strong> Analyze current input
+                    <div>💡 <strong>Tab:</strong> Cycle through {analysisType} examples (click outside inputs first)
+                        <strong>Shift+Tab:</strong> Works anywhere
+                        <strong>Enter:</strong> Analyze current input
                     </div>
                     <div>📝
                         Examples: {currentExamples.slice(0, 3).map(ex => `${ex.input} (${ex.description})`).join(' • ')}{currentExamples.length > 3 ? '...' : ''}</div>
@@ -430,6 +449,107 @@ function App() {
                                             <strong>Key:</strong> {result.primary_analysis.key_signature}
                                             {result.primary_analysis.mode &&
                                                 <span> ({result.primary_analysis.mode})</span>}
+                                        </div>
+                                    )}
+
+                                    {/* Enhanced Analysis Fields */}
+                                    {result.primary_analysis.contextual_classification && (
+                                        <div className="contextual-classification">
+                                            <strong>Context:</strong> {result.primary_analysis.contextual_classification.charAt(0).toUpperCase() + result.primary_analysis.contextual_classification.slice(1).replace('_', ' ')}
+                                        </div>
+                                    )}
+
+                                    {result.primary_analysis.modal_characteristics && result.primary_analysis.modal_characteristics.length > 0 && (
+                                        <div className="modal-characteristics">
+                                            <strong>Modal Characteristics:</strong>
+                                            <ul className="characteristics-list">
+                                                {result.primary_analysis.modal_characteristics.map((char, idx) => (
+                                                    <li key={idx}>• {char}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {result.primary_analysis.parent_key_relationship && (
+                                        <div className="parent-key-relationship">
+                                            <strong>Parent Key
+                                                Relationship:</strong> {result.primary_analysis.parent_key_relationship.charAt(0).toUpperCase() + result.primary_analysis.parent_key_relationship.slice(1)}
+                                        </div>
+                                    )}
+
+                                    {result.primary_analysis.secondary_dominants && result.primary_analysis.secondary_dominants.length > 0 && (
+                                        <div className="secondary-dominants">
+                                            <strong>Secondary Dominants:</strong>
+                                            <ul className="dominants-list">
+                                                {result.primary_analysis.secondary_dominants.map((dom, idx) => (
+                                                    <li key={idx}>• {dom.chord} → {dom.target} ({dom.roman_numeral})</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {result.primary_analysis.borrowed_chords && result.primary_analysis.borrowed_chords.length > 0 && (
+                                        <div className="borrowed-chords">
+                                            <strong>Borrowed Chords:</strong>
+                                            <ul className="borrowed-list">
+                                                {result.primary_analysis.borrowed_chords.map((chord, idx) => (
+                                                    <li key={idx}>• {chord.chord} ({chord.origin || 'borrowed'})</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {result.primary_analysis.chromatic_mediants && result.primary_analysis.chromatic_mediants.length > 0 && (
+                                        <div className="chromatic-mediants">
+                                            <strong>Chromatic Mediants:</strong>
+                                            <ul className="mediants-list">
+                                                {result.primary_analysis.chromatic_mediants.map((mediant, idx) => (
+                                                    <li key={idx}>• {mediant.chord} ({mediant.type || 'chromatic mediant'})</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {result.primary_analysis.cadences && result.primary_analysis.cadences.length > 0 && (
+                                        <div className="cadences">
+                                            <strong>Cadences:</strong>
+                                            <ul className="cadences-list">
+                                                {result.primary_analysis.cadences.map((cadence, idx) => (
+                                                    <li key={idx}>
+                                                        • {cadence.type.charAt(0).toUpperCase() + cadence.type.slice(1)} cadence: {cadence.chords}
+                                                        {cadence.strength && <span
+                                                            className="strength"> (strength: {cadence.strength})</span>}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {result.primary_analysis.chord_functions && result.primary_analysis.chord_functions.length > 0 && (
+                                        <div className="chord-functions">
+                                            <strong>Chord
+                                                Functions:</strong> {result.primary_analysis.chord_functions.map(func => func.charAt(0).toUpperCase() + func.slice(1)).join(' → ')}
+                                        </div>
+                                    )}
+
+                                    {/* Confidence Breakdown */}
+                                    {(result.primary_analysis.functional_confidence || result.primary_analysis.modal_confidence || result.primary_analysis.chromatic_confidence) && (
+                                        <div className="confidence-breakdown">
+                                            <strong>Confidence Breakdown:</strong>
+                                            <div className="confidence-grid">
+                                                {result.primary_analysis.functional_confidence && (
+                                                    <span
+                                                        className="confidence-item">Functional: {result.primary_analysis.functional_confidence.toFixed(2)}</span>
+                                                )}
+                                                {result.primary_analysis.modal_confidence && (
+                                                    <span
+                                                        className="confidence-item">Modal: {result.primary_analysis.modal_confidence.toFixed(2)}</span>
+                                                )}
+                                                {result.primary_analysis.chromatic_confidence && (
+                                                    <span
+                                                        className="confidence-item">Chromatic: {result.primary_analysis.chromatic_confidence.toFixed(2)}</span>
+                                                )}
+                                            </div>
                                         </div>
                                     )}
                                 </>
@@ -553,6 +673,35 @@ function App() {
                                     {alt.relationship_to_primary && (
                                         <div className="relationship">
                                             <strong>Relationship to Primary:</strong> {alt.relationship_to_primary}
+                                        </div>
+                                    )}
+
+                                    {/* Enhanced fields for alternatives */}
+                                    {alt.secondary_dominants && alt.secondary_dominants.length > 0 && (
+                                        <div className="secondary-dominants">
+                                            <strong>Secondary Dominants:</strong>
+                                            <ul className="dominants-list">
+                                                {alt.secondary_dominants.map((dom, idx) => (
+                                                    <li key={idx}>• {dom.chord} → {dom.target} ({dom.roman_numeral})</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {alt.modal_characteristics && alt.modal_characteristics.length > 0 && (
+                                        <div className="modal-characteristics">
+                                            <strong>Modal Characteristics:</strong>
+                                            <ul className="characteristics-list">
+                                                {alt.modal_characteristics.map((char, idx) => (
+                                                    <li key={idx}>• {char}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {alt.contextual_classification && (
+                                        <div className="contextual-classification">
+                                            <strong>Context:</strong> {alt.contextual_classification.charAt(0).toUpperCase() + alt.contextual_classification.slice(1).replace('_', ' ')}
                                         </div>
                                     )}
 
