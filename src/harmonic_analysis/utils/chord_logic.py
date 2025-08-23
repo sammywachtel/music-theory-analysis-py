@@ -20,7 +20,7 @@ class ChordMatch:
     quality: str
     bass_note: Optional[str] = None
     bass_pitch: Optional[int] = None
-    extensions: List[str] = None
+    extensions: Optional[List[str]] = None
     inversion: int = 0  # 0 = root position
 
     def __post_init__(self):
