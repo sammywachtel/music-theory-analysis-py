@@ -8,7 +8,6 @@ Updated to use warnings instead of failures to avoid blocking CI/CD while highli
 areas for improvement with colorful warning icons.
 """
 
-import warnings
 from dataclasses import dataclass
 from enum import Enum
 from typing import List
@@ -17,9 +16,7 @@ import pytest
 
 from harmonic_analysis import analyze_progression_multiple
 
-from .edge_case_warnings import (print_edge_case_summary,
-                                 soft_assert_with_warning,
-                                 warn_edge_case_behavior)
+from .edge_case_warnings import soft_assert_with_warning
 
 
 class EdgeCaseType(Enum):
