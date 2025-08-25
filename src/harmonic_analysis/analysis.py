@@ -7,10 +7,10 @@ scale analysis, and melody analysis.
 
 from typing import List, Optional
 
-from .scale_melody_analysis import \
-    analyze_scale_melody as _analyze_scale_melody
-from .services.multiple_interpretation_service import \
-    analyze_progression_multiple as _analyze_progression_multiple
+from .scale_melody_analysis import analyze_scale_melody as _analyze_scale_melody
+from .services.multiple_interpretation_service import (
+    analyze_progression_multiple as _analyze_progression_multiple,
+)
 from .types import AnalysisOptions
 
 
@@ -38,7 +38,7 @@ async def analyze_chord_progression(
     return await _analyze_progression_multiple(chords, options)
 
 
-def analyze_scale(notes: List[str], key: Optional[str] = None):
+async def analyze_scale(notes: List[str], key: Optional[str] = None):
     """
     Analyze a scale to identify modes and harmonic implications.
 
@@ -50,14 +50,14 @@ def analyze_scale(notes: List[str], key: Optional[str] = None):
         Scale analysis result with modal labels and contextual classification
 
     Example:
-        >>> result = analyze_scale(['D', 'E', 'F', 'G', 'A', 'B', 'C'])
+        >>> result = await analyze_scale(['D', 'E', 'F', 'G', 'A', 'B', 'C'])
         >>> print(result.modal_labels['D'])
         'D Dorian'
     """
     return _analyze_scale_melody(notes, key, melody=False)
 
 
-def analyze_melody(notes: List[str], key: Optional[str] = None):
+async def analyze_melody(notes: List[str], key: Optional[str] = None):
     """
     Analyze a melodic sequence with tonic inference.
 
@@ -69,7 +69,7 @@ def analyze_melody(notes: List[str], key: Optional[str] = None):
         Melody analysis result with suggested tonic and confidence
 
     Example:
-        >>> result = analyze_melody(['G', 'A', 'B', 'C', 'D'])
+        >>> result = await analyze_melody(['G', 'A', 'B', 'C', 'D'])
         >>> print(f"Suggested tonic: {result.suggested_tonic}")
         'Suggested tonic: G'
     """

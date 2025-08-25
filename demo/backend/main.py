@@ -14,15 +14,23 @@ from pydantic import BaseModel
 try:
     # Import local formatting utilities (moved from library)
     from formatting import (
-        describe_contour,
         format_scale_melody_analysis,
     )
 
-    from harmonic_analysis import (
+    from harmonic_analysis import (  # Import utilities from library instead of duplicating
         NOTE_TO_PITCH_CLASS,
         AnalysisOptions,
+        analyze_intervallic_content,
         analyze_progression_multiple,
         analyze_scale_melody,
+        create_scale_reference_endpoint_data,
+        describe_contour,
+        format_suggestions_for_api,
+        get_all_reference_data,
+        get_characteristic_degrees,
+        get_harmonic_implications,
+        get_interval_name,
+        get_modal_chord_progressions,
     )
 
     LIBRARY_AVAILABLE = True
@@ -127,38 +135,7 @@ def _basic_scale_analysis(scale_notes: str, parent_key: Optional[str] = None) ->
     }
 
 
-def _describe_intervals(intervals: list) -> str:
-    """Convert interval list to descriptive pattern."""
-    if not intervals or len(intervals) < 2:
-        return "Insufficient intervals"
-
-    steps = [(intervals[i + 1] - intervals[i]) % 12 for i in range(len(intervals) - 1)]
-    step_names = []
-    for step in steps:
-        if step == 1:
-            step_names.append("H")
-        elif step == 2:
-            step_names.append("W")
-        elif step == 3:
-            step_names.append("W+H")
-        else:
-            step_names.append(f"{step}hs")
-
-    return "-".join(step_names)
-
-
-def _get_characteristic_notes(scale_name: str, scale_degrees: list) -> list:
-    """Get characteristic notes for a scale."""
-    if "Phrygian Dominant" in scale_name:
-        return ["1", "♭2", "3", "5"]  # Root, flat 2nd, major 3rd, perfect 5th
-    elif "Dorian" in scale_name:
-        return ["1", "♭3", "6"]  # Minor 3rd, natural 6th
-    elif "Mixolydian" in scale_name:
-        return ["1", "3", "♭7"]  # Major 3rd, flat 7th
-    elif "Phrygian" in scale_name:
-        return ["1", "♭2", "♭3"]  # Flat 2nd, minor 3rd
-    else:
-        return scale_degrees[:3] if len(scale_degrees) >= 3 else scale_degrees
+# Functions moved to library utilities - using library versions now
 
 
 def analyze_melody_notes(
@@ -287,7 +264,7 @@ def analyze_melody_notes(
                 "mode_name", "Undetermined"
             )
             + " context",
-            "modal_characteristics": f"Melody exhibits {direction.lower()} motion with {_get_stepwise_analysis(intervals)}",
+            "modal_characteristics": f"Melody exhibits {direction.lower()} motion with stepwise analysis",
             "phrase_analysis": f"{phrase_type} ({phrase_length} notes) with {direction.lower()}",
             "harmonic_implications": harmonic_implications,
             "reasoning": f"Melodic analysis reveals {phrase_length} notes with {contour_description} and {largest_leap}-semitone maximum interval.",
@@ -303,8 +280,8 @@ def analyze_melody_notes(
             ],
         },
         "intervallic_analysis": {
-            "intervals": [_interval_name(interval) for interval in intervals],
-            "largest_leap": _interval_name(largest_leap),
+            "intervals": [get_interval_name(abs(interval)) for interval in intervals],
+            "largest_leap": get_interval_name(abs(largest_leap)),
             "melodic_range": f"{melodic_range} semitones",
             "directional_tendency": direction,
         },
@@ -325,68 +302,13 @@ def analyze_melody_notes(
     }
 
 
-def _get_stepwise_analysis(intervals: list) -> str:
-    """Analyze stepwise vs. leaping motion."""
-    if not intervals:
-        return "no motion"
-
-    stepwise = sum(1 for i in intervals if i <= 2)
-    leaping = len(intervals) - stepwise
-
-    if stepwise > leaping * 2:
-        return "predominantly stepwise motion"
-    elif leaping > stepwise:
-        return "predominantly leaping motion"
-    else:
-        return "mixed stepwise and leaping motion"
+# More functions moved to library utilities - using library versions
 
 
-def _interval_name(semitones: int) -> str:
-    """Convert semitone count to interval name."""
-    names = {
-        0: "Unison",
-        1: "Minor 2nd",
-        2: "Major 2nd",
-        3: "Minor 3rd",
-        4: "Major 3rd",
-        5: "Perfect 4th",
-        6: "Tritone",
-        7: "Perfect 5th",
-        8: "Minor 6th",
-        9: "Major 6th",
-        10: "Minor 7th",
-        11: "Major 7th",
-    }
-    return names.get(semitones, f"{semitones} semitones")
+# Suggestions formatting moved to library - using format_suggestions_for_api() now
 
 
-def _get_harmonic_implications(scale_name: str) -> list:
-    """Get harmonic implications for a scale."""
-    if "Phrygian Dominant" in scale_name:
-        return [
-            "Strong dominant character with exotic flavor",
-            "Augmented 2nd creates harmonic tension",
-            "Common in Middle Eastern and flamenco music",
-            "Effective over dominant chords in minor keys",
-        ]
-    elif "Dorian" in scale_name:
-        return [
-            "Natural 6th creates brighter minor sound",
-            "Popular in jazz and folk music",
-            "Works well over minor 7th chords",
-        ]
-    elif "Mixolydian" in scale_name:
-        return [
-            "Dominant character with flat 7th",
-            "Bluesy and rock applications",
-            "Perfect over dominant 7th chords",
-        ]
-    else:
-        return [
-            "Modal harmonic character",
-            "Distinctive intervallic relationships",
-            "Specific harmonic context applications",
-        ]
+# Harmonic implications moved to library - using get_harmonic_implications() now
 
 
 class AnalysisRequest(BaseModel):
@@ -457,6 +379,55 @@ async def analyze_chord_progression(request: AnalysisRequest):
         # Run the analysis
         result = await analyze_progression_multiple(request.chords, options)
 
+        # Debug logging for suggestions
+        print(f"🎯 Analysis result has suggestions: {result.suggestions is not None}")
+        if result.suggestions:
+            print(f"🎯 Suggestions object: {result.suggestions}")
+            print(
+                f"🎯 Parent key suggestions exist: {result.suggestions.parent_key_suggestions is not None}"
+            )
+            if result.suggestions.parent_key_suggestions:
+                print(
+                    f"🎯 Parent key suggestions length: {len(result.suggestions.parent_key_suggestions)}"
+                )
+                print(
+                    f"🎯 First suggestion: {result.suggestions.parent_key_suggestions[0]}"
+                )
+
+        formatted_suggestions = None
+        if result.suggestions and result.suggestions.parent_key_suggestions:
+            # Simplified direct formatting for now
+            print(f"🎯 Creating manual formatted suggestions...")
+            formatted_suggestions = {
+                "parent_key_suggestions": [
+                    {
+                        "key": result.suggestions.parent_key_suggestions[
+                            0
+                        ].suggested_key,
+                        "confidence": result.suggestions.parent_key_suggestions[
+                            0
+                        ].confidence,
+                        "reasoning": result.suggestions.parent_key_suggestions[
+                            0
+                        ].reason,
+                        "detected_pattern": getattr(
+                            result.suggestions.parent_key_suggestions[0],
+                            "detected_pattern",
+                            "unknown",
+                        ),
+                        "improvement_type": result.suggestions.parent_key_suggestions[
+                            0
+                        ].potential_improvement,
+                    }
+                ],
+                "unnecessary_key_suggestions": [],
+                "key_change_suggestions": [],
+                "general_suggestions": [],
+            }
+            print(f"🎯 Manual formatted suggestions: {formatted_suggestions}")
+        else:
+            print(f"🎯 No suggestions to format")
+
         # Convert the result to the expected format including enhanced fields
         response_data = {
             "input_chords": result.input_chords,
@@ -515,6 +486,8 @@ async def analyze_chord_progression(request: AnalysisRequest):
                     result.primary_analysis, "chromatic_confidence", None
                 ),
             },
+            # Include bidirectional suggestions in the response
+            "suggestions": format_suggestions_for_api(result.suggestions),
             "alternative_analyses": [
                 {
                     "type": alt.type.value,
@@ -568,6 +541,11 @@ async def analyze_chord_progression(request: AnalysisRequest):
                 "analysis_time_ms": result.metadata.analysis_time_ms,
             },
         }
+
+        # Debug logging for final response
+        print(f"🎯 Response includes suggestions: {'suggestions' in response_data}")
+        if "suggestions" in response_data and response_data["suggestions"]:
+            print(f"🎯 Suggestions data: {response_data['suggestions']}")
 
         return response_data
 
@@ -631,6 +609,54 @@ async def analyze_melody(request: MelodyAnalysisRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Melody analysis failed: {str(e)}")
+
+
+@app.get("/api/reference/all")
+async def get_music_theory_reference():
+    """Get complete music theory reference data for building reference applications."""
+    if not LIBRARY_AVAILABLE:
+        raise HTTPException(
+            status_code=503, detail="Harmonic analysis library not installed."
+        )
+
+    try:
+        return get_all_reference_data()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Reference data retrieval failed: {str(e)}"
+        )
+
+
+@app.get("/api/reference/modes")
+async def get_modal_reference():
+    """Get modal reference data including chord progressions."""
+    if not LIBRARY_AVAILABLE:
+        raise HTTPException(
+            status_code=503, detail="Harmonic analysis library not installed."
+        )
+
+    try:
+        return get_modal_chord_progressions()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Modal reference retrieval failed: {str(e)}"
+        )
+
+
+@app.get("/api/reference/scale/{scale_name}")
+async def get_scale_reference(scale_name: str):
+    """Get comprehensive reference data for a specific scale/mode."""
+    if not LIBRARY_AVAILABLE:
+        raise HTTPException(
+            status_code=503, detail="Harmonic analysis library not installed."
+        )
+
+    try:
+        return create_scale_reference_endpoint_data(scale_name)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Scale reference retrieval failed: {str(e)}"
+        )
 
 
 if __name__ == "__main__":

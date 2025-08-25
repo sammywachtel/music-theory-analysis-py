@@ -21,11 +21,18 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, List, Optional
 
-from ..core.enhanced_modal_analyzer import (EnhancedModalAnalyzer,
-                                            ModalAnalysisResult)
-from ..core.functional_harmony import (FunctionalAnalysisResult,
-                                       FunctionalHarmonyAnalyzer)
-from ..types import AnalysisOptions
+from ..core.enhanced_modal_analyzer import EnhancedModalAnalyzer, ModalAnalysisResult
+from ..core.functional_harmony import (
+    FunctionalAnalysisResult,
+    FunctionalHarmonyAnalyzer,
+)
+from ..types import (
+    AnalysisOptions,
+    AnalysisSuggestions,
+    KeySuggestion,
+)
+from .algorithmic_suggestion_engine import AlgorithmicSuggestionEngine
+from .bidirectional_suggestion_engine import BidirectionalSuggestionEngine
 
 
 class EvidenceType(Enum):
@@ -128,6 +135,7 @@ class MultipleInterpretationResult:
     metadata: MultipleInterpretationMetadata
     input_chords: List[str]
     input_options: Optional[AnalysisOptions] = None
+    suggestions: Optional[AnalysisSuggestions] = None
 
 
 # Confidence framework based on music theory expert guidance
@@ -217,6 +225,8 @@ class MultipleInterpretationService:
         self.cache = AnalysisCache()
         self.functional_analyzer = FunctionalHarmonyAnalyzer()
         self.modal_analyzer = EnhancedModalAnalyzer()
+        self.suggestion_engine = AlgorithmicSuggestionEngine()
+        self.bidirectional_engine = BidirectionalSuggestionEngine()
 
     async def analyze_progression(
         self, chords: List[str], options: Optional[AnalysisOptions] = None
@@ -286,6 +296,11 @@ class MultipleInterpretationService:
                 ranked_interpretations, confidence_threshold, max_alternatives
             )
 
+            # Generate suggestions for improving analysis
+            suggestions = await self._generate_analysis_suggestions(
+                chords, ranked_interpretations, functional_result, options
+            )
+
             # Create result
             analysis_time_ms = (time.time() - start_time) * 1000
 
@@ -309,6 +324,7 @@ class MultipleInterpretationService:
                 ),
                 input_chords=chords,
                 input_options=options,
+                suggestions=suggestions,
             )
 
             # Cache result
@@ -595,24 +611,25 @@ class MultipleInterpretationService:
         """Collect evidence for modal analysis"""
         evidence: List[AnalysisEvidence] = []
 
-        # Modal characteristics
+        # Modal characteristics - preserve original evidence types and descriptions
         for modal_evidence in modal_result.evidence:
-            chord_info = getattr(
-                modal_evidence,
-                "chord",
-                getattr(modal_evidence, "pattern", str(modal_evidence)),
-            )
+            # Use the original evidence type instead of forcing INTERVALLIC
+            evidence_type = getattr(modal_evidence, "type", EvidenceType.INTERVALLIC)
+
+            # Use the original description instead of stringifying
+            description = getattr(modal_evidence, "description", str(modal_evidence))
+
+            # Use the original strength instead of hardcoding 0.85
+            strength = getattr(modal_evidence, "strength", 0.85)
+
             evidence.append(
                 AnalysisEvidence(
-                    type=EvidenceType.INTERVALLIC,
-                    strength=0.85,
-                    description=(
-                        f"{chord_info} indicates {modal_result.mode_name} "
-                        "characteristics"
-                    ),
+                    type=evidence_type,
+                    strength=strength,
+                    description=description,
                     supported_interpretations=[InterpretationType.MODAL],
                     musical_basis=(
-                        f"{chord_info} is characteristic of "
+                        f"{description} is characteristic of "
                         f"{modal_result.mode_name} mode"
                     ),
                 )
@@ -1115,6 +1132,102 @@ class MultipleInterpretationService:
                     )
 
         return elements
+
+    async def _generate_analysis_suggestions(
+        self,
+        chords: List[str],
+        interpretations: List["Interpretation"],
+        functional_result: Optional[FunctionalAnalysisResult],
+        options: AnalysisOptions,
+    ) -> Optional[AnalysisSuggestions]:
+        """Generate bidirectional suggestions for improving analysis quality."""
+
+        try:
+            # Extract current analysis metrics for bidirectional engine
+            current_confidence = (
+                interpretations[0].confidence if interpretations else 0.0
+            )
+            current_roman_numerals = (
+                interpretations[0].roman_numerals if interpretations else []
+            )
+
+            # Use bidirectional suggestion engine for comprehensive suggestions
+            bidirectional_suggestions = (
+                await self.bidirectional_engine.generate_bidirectional_suggestions(
+                    chords,
+                    options.parent_key,
+                    current_confidence,
+                    current_roman_numerals,
+                )
+            )
+
+            if bidirectional_suggestions:
+                # Convert to AnalysisSuggestions format
+                from ..types import AnalysisSuggestions, KeySuggestion
+
+                parent_key_suggestions = []
+                unnecessary_key_suggestions = []
+                key_change_suggestions = []
+
+                for suggestion in bidirectional_suggestions:
+                    # Extract first detected pattern if available
+                    detected_pattern = ""
+                    if hasattr(suggestion, "relevance_score") and hasattr(
+                        suggestion.relevance_score, "detected_patterns"
+                    ):
+                        patterns = suggestion.relevance_score.detected_patterns
+                        detected_pattern = patterns[0] if patterns else ""
+
+                    key_suggestion = KeySuggestion(
+                        suggested_key=suggestion.suggested_key or "",
+                        confidence=suggestion.confidence,
+                        reason=suggestion.reason,
+                        detected_pattern=detected_pattern,
+                        potential_improvement=suggestion.potential_improvement,
+                    )
+
+                    if suggestion.suggestion_type.value == "add_key":
+                        parent_key_suggestions.append(key_suggestion)
+                    elif suggestion.suggestion_type.value == "remove_key":
+                        unnecessary_key_suggestions.append(key_suggestion)
+                    elif suggestion.suggestion_type.value == "change_key":
+                        key_change_suggestions.append(key_suggestion)
+
+                return AnalysisSuggestions(
+                    parent_key_suggestions=parent_key_suggestions,
+                    unnecessary_key_suggestions=unnecessary_key_suggestions or None,
+                    key_change_suggestions=key_change_suggestions or None,
+                    general_suggestions=[],
+                )
+
+        except Exception as e:
+            # If bidirectional engine fails, fall back to algorithmic engine
+            print(f"Bidirectional suggestion engine error: {e}")
+
+            # Fallback: Use old algorithmic engine for basic suggestions
+            if not options.parent_key:
+                try:
+                    current_confidence = (
+                        interpretations[0].confidence if interpretations else 0.0
+                    )
+                    current_roman_numerals = (
+                        interpretations[0].roman_numerals if interpretations else []
+                    )
+
+                    key_suggestions = await self.suggestion_engine.generate_suggestions(
+                        chords, current_confidence, current_roman_numerals
+                    )
+
+                    if key_suggestions:
+                        return AnalysisSuggestions(
+                            parent_key_suggestions=key_suggestions,
+                            general_suggestions=[],
+                        )
+
+                except Exception as fallback_error:
+                    print(f"Fallback suggestion engine error: {fallback_error}")
+
+        return None
 
 
 # Export singleton instance

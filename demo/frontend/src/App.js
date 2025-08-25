@@ -299,6 +299,123 @@ function App() {
         );
     };
 
+    const renderSuggestions = (suggestions) => {
+        if (!suggestions) return null;
+
+        const hasAnysuggestions =
+            (suggestions.parent_key_suggestions && suggestions.parent_key_suggestions.length > 0) ||
+            (suggestions.unnecessary_key_suggestions && suggestions.unnecessary_key_suggestions.length > 0) ||
+            (suggestions.key_change_suggestions && suggestions.key_change_suggestions.length > 0) ||
+            (suggestions.general_suggestions && suggestions.general_suggestions.length > 0);
+
+        if (!hasAnysuggestions) return null;
+
+        return (
+            <div className="suggestions-section">
+                <h3>🎯 Intelligent Suggestions</h3>
+
+                {/* Add Key Suggestions */}
+                {suggestions.parent_key_suggestions && suggestions.parent_key_suggestions.length > 0 && (
+                    <div className="suggestion-category add-key-suggestions">
+                        <h4>➕ Add Parent Key Context</h4>
+                        <p className="suggestion-intro">Adding a parent key could significantly improve this analysis:</p>
+                        {suggestions.parent_key_suggestions.map((suggestion, idx) => (
+                            <div key={idx} className="suggestion-item">
+                                <div className="suggestion-header">
+                                    <span className="suggested-key">{suggestion.key}</span>
+                                    <span className="suggestion-confidence">Confidence: {(suggestion.confidence * 100).toFixed(1)}%</span>
+                                </div>
+                                <div className="suggestion-reasoning">{suggestion.reasoning}</div>
+                                {suggestion.detected_pattern && (
+                                    <div className="detected-pattern">🎵 Detected: {suggestion.detected_pattern}</div>
+                                )}
+                                <button
+                                    className="apply-suggestion-btn"
+                                    onClick={() => {
+                                        setParentKey(suggestion.key);
+                                        setTimeout(() => analyzeInput(), 100);
+                                    }}
+                                >
+                                    Try "{suggestion.key}" →
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* Remove Key Suggestions */}
+                {suggestions.unnecessary_key_suggestions && suggestions.unnecessary_key_suggestions.length > 0 && (
+                    <div className="suggestion-category remove-key-suggestions">
+                        <h4>➖ Remove Unnecessary Parent Key</h4>
+                        <p className="suggestion-intro">The current parent key may not be helping:</p>
+                        {suggestions.unnecessary_key_suggestions.map((suggestion, idx) => (
+                            <div key={idx} className="suggestion-item">
+                                <div className="suggestion-header">
+                                    <span className="suggested-key">Remove "{suggestion.key}"</span>
+                                    <span className="suggestion-confidence">Confidence: {(suggestion.confidence * 100).toFixed(1)}%</span>
+                                </div>
+                                <div className="suggestion-reasoning">{suggestion.reasoning}</div>
+                                {suggestion.detected_pattern && (
+                                    <div className="detected-pattern">🎵 Pattern: {suggestion.detected_pattern}</div>
+                                )}
+                                <button
+                                    className="apply-suggestion-btn remove-key-btn"
+                                    onClick={() => {
+                                        setParentKey('');
+                                        setTimeout(() => analyzeInput(), 100);
+                                    }}
+                                >
+                                    Remove Parent Key →
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* Change Key Suggestions */}
+                {suggestions.key_change_suggestions && suggestions.key_change_suggestions.length > 0 && (
+                    <div className="suggestion-category change-key-suggestions">
+                        <h4>🔄 Try Different Parent Key</h4>
+                        <p className="suggestion-intro">A different parent key might work better:</p>
+                        {suggestions.key_change_suggestions.map((suggestion, idx) => (
+                            <div key={idx} className="suggestion-item">
+                                <div className="suggestion-header">
+                                    <span className="suggested-key">Change to "{suggestion.key}"</span>
+                                    <span className="suggestion-confidence">Confidence: {(suggestion.confidence * 100).toFixed(1)}%</span>
+                                </div>
+                                <div className="suggestion-reasoning">{suggestion.reasoning}</div>
+                                {suggestion.detected_pattern && (
+                                    <div className="detected-pattern">🎵 Pattern: {suggestion.detected_pattern}</div>
+                                )}
+                                <button
+                                    className="apply-suggestion-btn change-key-btn"
+                                    onClick={() => {
+                                        setParentKey(suggestion.key);
+                                        setTimeout(() => analyzeInput(), 100);
+                                    }}
+                                >
+                                    Try "{suggestion.key}" →
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* General Suggestions */}
+                {suggestions.general_suggestions && suggestions.general_suggestions.length > 0 && (
+                    <div className="suggestion-category general-suggestions">
+                        <h4>💡 General Suggestions</h4>
+                        {suggestions.general_suggestions.map((suggestion, idx) => (
+                            <div key={idx} className="general-suggestion-item">
+                                • {suggestion}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     return (
         <div className="App">
             <header className="app-header">
@@ -421,6 +538,9 @@ function App() {
                             {analysisType === 'melody' && result.input_melody && result.input_melody.join(' - ')}
                         </div>
                     </div>
+
+                    {/* Suggestions Section - Show first for immediate visibility */}
+                    {result.suggestions && renderSuggestions(result.suggestions)}
 
                     {/* Primary Analysis */}
                     <div className="section primary-analysis">

@@ -45,6 +45,335 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+# === Mode Families derived from frontend allScaleData (intervals in semitones) ===
+ALL_MODE_FAMILIES = [
+    {
+        "name": "Major Scale",
+        "tableId": "major-scale-modes",
+        "is_diatonic": True,
+        "modes": [
+            {
+                "degree": "I",
+                "name": "Ionian",
+                "intervals": [0, 2, 4, 5, 7, 9, 11],
+                "formula": "1, 2, 3, 4, 5, 6, 7",
+            },
+            {
+                "degree": "II",
+                "name": "Dorian",
+                "intervals": [0, 2, 3, 5, 7, 9, 10],
+                "formula": "1, 2, ♭3, 4, 5, 6, ♭7",
+            },
+            {
+                "degree": "III",
+                "name": "Phrygian",
+                "intervals": [0, 1, 3, 5, 7, 8, 10],
+                "formula": "1, ♭2, ♭3, 4, 5, ♭6, ♭7",
+            },
+            {
+                "degree": "IV",
+                "name": "Lydian",
+                "intervals": [0, 2, 4, 6, 7, 9, 11],
+                "formula": "1, 2, 3, ♯4, 5, 6, 7",
+            },
+            {
+                "degree": "V",
+                "name": "Mixolydian",
+                "intervals": [0, 2, 4, 5, 7, 9, 10],
+                "formula": "1, 2, 3, 4, 5, 6, ♭7",
+            },
+            {
+                "degree": "VI",
+                "name": "Aeolian",
+                "intervals": [0, 2, 3, 5, 7, 8, 10],
+                "formula": "1, 2, ♭3, 4, 5, ♭6, ♭7",
+            },
+            {
+                "degree": "VII",
+                "name": "Locrian",
+                "intervals": [0, 1, 3, 5, 6, 8, 10],
+                "formula": "1, ♭2, ♭3, 4, ♭5, ♭6, ♭7",
+            },
+        ],
+    },
+    {
+        "name": "Melodic Minor",
+        "tableId": "melodic-minor-modes",
+        "is_diatonic": True,
+        "modes": [
+            {
+                "degree": "I",
+                "name": "Melodic Minor",
+                "intervals": [0, 2, 3, 5, 7, 9, 11],
+                "formula": "1, 2, ♭3, 4, 5, 6, 7",
+            },
+            {
+                "degree": "II",
+                "name": "Dorian ♭2",
+                "intervals": [0, 1, 3, 5, 7, 9, 10],
+                "formula": "1, ♭2, ♭3, 4, 5, 6, ♭7",
+            },
+            {
+                "degree": "III",
+                "name": "Lydian Augmented",
+                "intervals": [0, 2, 4, 6, 8, 9, 11],
+                "formula": "1, 2, 3, ♯4, ♯5, 6, 7",
+            },
+            {
+                "degree": "IV",
+                "name": "Lydian Dominant",
+                "intervals": [0, 2, 4, 6, 7, 9, 10],
+                "formula": "1, 2, 3, ♯4, 5, 6, ♭7",
+            },
+            {
+                "degree": "V",
+                "name": "Mixolydian ♭6",
+                "intervals": [0, 2, 4, 5, 7, 8, 10],
+                "formula": "1, 2, 3, 4, 5, ♭6, ♭7",
+            },
+            {
+                "degree": "VI",
+                "name": "Locrian ♮2",
+                "intervals": [0, 2, 3, 5, 6, 8, 10],
+                "formula": "1, 2, ♭3, 4, ♭5, ♭6, ♭7",
+            },
+            {
+                "degree": "VII",
+                "name": "Altered",
+                "intervals": [0, 1, 3, 4, 6, 8, 10],
+                "formula": "1, ♭2, ♭3, ♭4, ♭5, ♭6, ♭7",
+            },
+        ],
+    },
+    {
+        "name": "Harmonic Minor",
+        "tableId": "harmonic-minor-modes",
+        "is_diatonic": True,
+        "modes": [
+            {
+                "degree": "I",
+                "name": "Harmonic Minor",
+                "intervals": [0, 2, 3, 5, 7, 8, 11],
+                "formula": "1, 2, ♭3, 4, 5, ♭6, 7",
+            },
+            {
+                "degree": "II",
+                "name": "Locrian ♮6",
+                "intervals": [0, 1, 3, 5, 6, 8, 10],
+                "formula": "1, ♭2, ♭3, 4, ♭5, 6, ♭7",
+            },
+            {
+                "degree": "III",
+                "name": "Ionian ♯5",
+                "intervals": [0, 2, 4, 5, 8, 9, 11],
+                "formula": "1, 2, 3, 4, ♯5, 6, 7",
+            },
+            {
+                "degree": "IV",
+                "name": "Dorian ♯4",
+                "intervals": [0, 2, 3, 6, 7, 9, 10],
+                "formula": "1, 2, ♭3, ♯4, 5, 6, ♭7",
+            },
+            {
+                "degree": "V",
+                "name": "Phrygian Dominant",
+                "intervals": [0, 1, 4, 5, 7, 8, 10],
+                "formula": "1, ♭2, 3, 4, 5, ♭6, ♭7",
+            },
+            {
+                "degree": "VI",
+                "name": "Lydian ♯2",
+                "intervals": [0, 3, 4, 6, 8, 10, 11],
+                "formula": "1, ♯2, 3, ♯4, 5, 6, 7",
+            },
+            {
+                "degree": "VII",
+                "name": "Super-Locrian",
+                "intervals": [0, 1, 3, 4, 6, 7, 9],
+                "formula": "1, ♭2, ♭3, ♭4, ♭5, ♭6, ♭7",
+            },
+        ],
+    },
+    {
+        "name": "Harmonic Major",
+        "tableId": "harmonic-major-modes",
+        "is_diatonic": True,
+        "modes": [
+            {
+                "degree": "I",
+                "name": "Harmonic Major",
+                "intervals": [0, 2, 4, 5, 7, 8, 11],
+                "formula": "1, 2, 3, 4, 5, ♭6, 7",
+            },
+            {
+                "degree": "II",
+                "name": "Dorian ♭5",
+                "intervals": [0, 2, 3, 5, 6, 9, 10],
+                "formula": "1, 2, ♭3, 4, ♭5, 6, ♭7",
+            },
+            {
+                "degree": "III",
+                "name": "Phrygian ♭4",
+                "intervals": [0, 1, 3, 4, 7, 8, 10],
+                "formula": "1, ♭2, ♭3, ♭4, 5, ♭6, ♭7",
+            },
+            {
+                "degree": "IV",
+                "name": "Lydian ♭3",
+                "intervals": [0, 2, 3, 6, 7, 9, 11],
+                "formula": "1, 2, ♭3, ♯4, 5, 6, 7",
+            },
+            {
+                "degree": "V",
+                "name": "Mixolydian ♭2",
+                "intervals": [0, 1, 4, 5, 7, 9, 10],
+                "formula": "1, ♭2, 3, 4, 5, 6, ♭7",
+            },
+            {
+                "degree": "VI",
+                "name": "Lydian Aug ♯2",
+                "intervals": [0, 3, 4, 6, 8, 10, 11],
+                "formula": "1, ♯2, 3, ♯4, ♯5, 6, 7",
+            },
+            {
+                "degree": "VII",
+                "name": "Locrian ♭7♭5",
+                "intervals": [0, 1, 3, 5, 6, 8, 9],
+                "formula": "1, ♭2, ♭3, 4, ♭5, ♭6, ♭♭7",
+            },
+        ],
+    },
+    {
+        "name": "Double Harmonic Major",
+        "tableId": "double-harmonic-major-modes",
+        "is_diatonic": True,
+        "modes": [
+            {
+                "degree": "I",
+                "name": "Double Harmonic",
+                "intervals": [0, 1, 4, 5, 7, 8, 11],
+                "formula": "1, ♭2, 3, 4, 5, ♭6, 7",
+            },
+            {
+                "degree": "II",
+                "name": "Lydian ♯2 ♯6",
+                "intervals": [0, 3, 4, 6, 7, 10, 11],
+                "formula": "1, ♯2, 3, ♯4, 5, ♯6, 7",
+            },
+            {
+                "degree": "III",
+                "name": "Ultraphrygian",
+                "intervals": [0, 1, 3, 4, 7, 9, 10],
+                "formula": "1, ♭2, ♭3, ♭4, 5, 6, ♭7",
+            },
+            {
+                "degree": "IV",
+                "name": "Hungarian Minor",
+                "intervals": [0, 2, 3, 6, 7, 8, 10],
+                "formula": "1, 2, ♭3, ♯4, 5, ♭6, ♭7",
+            },
+            {
+                "degree": "V",
+                "name": "Oriental",
+                "intervals": [0, 1, 4, 5, 6, 9, 10],
+                "formula": "1, ♭2, 3, 4, ♭5, 6, ♭7",
+            },
+            {
+                "degree": "VI",
+                "name": "Ionian Aug ♯2",
+                "intervals": [0, 3, 4, 5, 8, 9, 11],
+                "formula": "1, ♯2, 3, 4, ♯5, 6, 7",
+            },
+            {
+                "degree": "VII",
+                "name": "Ultra-Locrian",
+                "intervals": [0, 1, 2, 4, 5, 7, 8],
+                "formula": "1, ♭2, ♭♭3, ♭4, ♭5, ♭6, ♭♭7",
+            },
+        ],
+    },
+    {
+        "name": "Major Pentatonic",
+        "tableId": "major-pentatonic-modes",
+        "is_diatonic": False,
+        "modes": [
+            {
+                "degree": "I",
+                "name": "Mode I",
+                "intervals": [0, 2, 4, 7, 9],
+                "formula": "1, 2, 3, 5, 6",
+            },
+            {
+                "degree": "II",
+                "name": "Mode II",
+                "intervals": [0, 2, 5, 7, 10],
+                "formula": "1, 2, 4, 5, ♭7",
+            },
+            {
+                "degree": "III",
+                "name": "Mode III",
+                "intervals": [0, 3, 5, 8, 10],
+                "formula": "1, ♭3, 4, ♭6, ♭7",
+            },
+            {
+                "degree": "IV",
+                "name": "Mode IV",
+                "intervals": [0, 2, 5, 7, 9],
+                "formula": "1, 2, 4, 5, 6",
+            },
+            {
+                "degree": "V",
+                "name": "Mode V",
+                "intervals": [0, 3, 5, 7, 10],
+                "formula": "1, ♭3, 4, 5, ♭7",
+            },
+        ],
+    },
+    {
+        "name": "Blues Scale",
+        "tableId": "blues-scale-modes",
+        "is_diatonic": False,
+        "modes": [
+            {
+                "degree": "I",
+                "name": "Mode I",
+                "intervals": [0, 3, 5, 6, 7, 10],
+                "formula": "1, ♭3, 4, ♭5, 5, ♭7",
+            },
+            {
+                "degree": "II",
+                "name": "Mode II",
+                "intervals": [0, 2, 3, 4, 7, 9],
+                "formula": "1, 2, ♭3, 3, 5, 6",
+            },
+            {
+                "degree": "III",
+                "name": "Mode III",
+                "intervals": [0, 1, 2, 5, 7, 10],
+                "formula": "1, ♭2, 2, 4, 5, ♭7",
+            },
+            {
+                "degree": "IV",
+                "name": "Mode IV",
+                "intervals": [0, 1, 4, 6, 9, 11],
+                "formula": "1, ♭2, 3, ♯4, 6, 7",
+            },
+            {
+                "degree": "V",
+                "name": "Mode V",
+                "intervals": [0, 3, 5, 8, 10, 11],
+                "formula": "1, ♭3, 4, ♭6, ♭7, 7",
+            },
+            {
+                "degree": "VI",
+                "name": "Mode VI",
+                "intervals": [0, 2, 3, 7, 8, 9],
+                "formula": "1, 2, ♭3, 5, ♭6, 6",
+            },
+        ],
+    },
+]
+
 
 @dataclass
 class FunctionalExpectation:
@@ -193,6 +522,22 @@ class ComprehensiveMultiLayerGenerator:
             "Aeolian": {"offset": -9, "mode": "major"},
             "Locrian": {"offset": -11, "mode": "major"},
         }
+
+        # Default tonics to exercise enharmonic coverage
+        self.default_tonics = [
+            "C",
+            "G",
+            "D",
+            "A",
+            "E",
+            "B",
+            "F#",
+            "Db",
+            "Ab",
+            "Eb",
+            "Bb",
+            "F",
+        ]
 
     def generate_all_tests(self) -> List[MultiLayerTestCase]:
         """🎵 GENERATE ALL THE TESTS!"""
@@ -1014,6 +1359,88 @@ class ComprehensiveMultiLayerGenerator:
             )
         return fixtures
 
+    def get_mode_family_scale_fixtures(self) -> List[Dict[str, Any]]:
+        """
+        Programmatically derive fixtures for every mode in each scale family from ALL_MODE_FAMILIES.
+        For the Major family, include the parent major key context (e.g., D Dorian uses C major as context).
+        For synthetic families (melodic minor, harmonic minor/major, double harmonic, pentatonic, blues),
+        keep key=None to avoid mislabeling as diatonic-to-major/minor in our simplified checks.
+        """
+        fixtures: List[Dict[str, Any]] = []
+        for family in ALL_MODE_FAMILIES:
+            for tonic in self.default_tonics:
+                for mode in family["modes"]:
+                    intervals = mode["intervals"]
+                    notes = self._build_scale_from_intervals(tonic, intervals)
+
+                    key_ctx: Optional[str] = None
+                    if family["name"] == "Major Scale":
+                        # Parent is mode-tonic transposed DOWN by the major degree interval of that mode.
+                        # Use the offsets you already expose in self.modal_parent_keys.
+                        mode_root_name = mode["name"].split()[0]
+                        if mode_root_name in self.modal_parent_keys:
+                            offset = self.modal_parent_keys[mode_root_name]["offset"]
+                        else:
+                            offset = 0
+                        parent_root = self.get_chord_at_interval(tonic, offset)
+                        key_ctx = f"{parent_root} major"
+
+                    fixtures.append(
+                        {
+                            "id": f"FAM:{family['tableId']}:{tonic}:{mode['degree']}:{mode['name']}",
+                            "input": {"notes": notes, "key": key_ctx, "melody": False},
+                            "expected": {},
+                            "meta": {
+                                "family": family["name"],
+                                "mode": mode["name"],
+                                "degree": mode["degree"],
+                                "tonic": tonic,
+                                "formula": mode.get("formula", ""),
+                            },
+                        }
+                    )
+        return fixtures
+
+    def get_mode_family_melody_fixtures(self) -> List[Dict[str, Any]]:
+        """Like get_mode_family_scale_fixtures, but generates short melodic phrases
+        that start and end on the tonic and highlight each family's color tones.
+        We set melody=True so tonic inference and contour description are exercised."""
+        fixtures: List[Dict[str, Any]] = []
+        for family in ALL_MODE_FAMILIES:
+            for tonic in self.default_tonics:
+                for mode in family["modes"]:
+                    intervals = mode["intervals"]
+                    notes = self._build_mode_phrase(
+                        tonic, intervals, family["name"]
+                    )  # melodic phrase
+
+                    key_ctx: Optional[str] = None
+                    if family["name"] == "Major Scale":
+                        name = mode["name"].split()[0]
+                        offset = self.modal_parent_keys.get(name, {}).get("offset", 0)
+                        parent_root = self.get_chord_at_interval(tonic, offset)
+                        key_ctx = f"{parent_root} major"
+
+                    fixtures.append(
+                        {
+                            "id": f"FAM_MELODY:{family['tableId']}:{tonic}:{mode['degree']}:{mode['name']}",
+                            "input": {
+                                "notes": notes,
+                                "key": key_ctx,
+                                "melody": True,
+                            },
+                            "expected": {},
+                            "meta": {
+                                "family": family["name"],
+                                "mode": mode["name"],
+                                "degree": mode["degree"],
+                                "tonic": tonic,
+                                "formula": mode.get("formula", ""),
+                            },
+                        }
+                    )
+        return fixtures
+
     def create_scale_melody_test(self, fixture: Dict[str, Any]) -> MultiLayerTestCase:
         """Create a MultiLayerTestCase populated with scale/melody expectations only."""
         placeholders = self.minimal_expectations_for_nonharmonic()
@@ -1058,41 +1485,142 @@ class ComprehensiveMultiLayerGenerator:
     def generate_scale_and_melody_tests(self):
         """Generate enhanced tests for scales and melodies (pitch collections + tonic inference)."""
         print("  🎼 Generating scale & melody fixtures with enhanced expectations...")
+        # 1) Existing procedural seeds (kept for regression coverage)
         for fixture in self.get_scale_melody_fixtures():
             self.test_cases.append(self.create_scale_melody_test(fixture))
 
-    def _parent_scales_of(self, notes: List[str]) -> List[str]:
-        """Return parent major/minor scales that contain all given notes (enharmonic aware, simplified)."""
-        majors = ["C", "G", "D", "A", "E", "B", "F#", "Db", "Ab", "Eb", "Bb", "F"]
-        result = []
-        for m in majors:
-            # Build major scale pitch classes
-            pcs = {self.note_map[m]}
-            # major scale intervals: 0,2,4,5,7,9,11
-            for iv in [2, 4, 5, 7, 9, 11]:
-                pcs.add((self.note_map[m] + iv) % 12)
-            note_pcs = {
-                (
-                    self.note_map.get(n)
-                    if n in self.note_map
-                    else self.note_map.get(self._enh_norm(n))
-                )
-                for n in notes
-            }
-            if None not in note_pcs and note_pcs.issubset(pcs):
-                result.append(f"{m} major")
-                # include relative minor for convenience
-                rel_minor_pc = (self.note_map[m] + 9) % 12
-                rel_minor = next(
-                    (
-                        k
-                        for k, v in self.note_map.items()
-                        if v == rel_minor_pc and len(k) == 1
-                    ),
+        # 2) Comprehensive family/mode coverage for every mode in each type
+        print("  🔬 Generating family/mode coverage for all modes in each type...")
+        for raw in self.get_mode_family_scale_fixtures():
+            input_part = raw["input"]
+            parents = self._parent_scales_of(
+                input_part["notes"]
+            )  # major/minor parents only
+            diatonic = (
+                None
+                if not input_part.get("key")
+                else self._is_diatonic_pitch_set(input_part["notes"], input_part["key"])
+            )
+            non_diatonic = (
+                []
+                if diatonic in (True, None)
+                else self._non_diatonic_pitches(input_part["notes"], input_part["key"])
+            )
+            modal_labels = self._modal_labels_for(input_part["notes"])
+            classification = self._classify_scale_usage(
+                input_part["notes"], input_part.get("key"), diatonic
+            )
+
+            raw["expected"] = {
+                "parent_scales": parents,
+                "diatonic_in_key": diatonic,
+                "non_diatonic_pitches": non_diatonic,
+                "modal_labels": modal_labels,
+                "classification": classification,
+                "rationale": self._scale_rationale(
+                    input_part["notes"],
+                    input_part.get("key"),
+                    classification,
+                    modal_labels,
+                    parents,
+                    non_diatonic,
                     None,
-                )
-                if rel_minor:
-                    result.append(f"{rel_minor} minor")
+                ),
+            }
+
+            self.test_cases.append(self.create_scale_melody_test(raw))
+
+        # 3) Melody variants for each family/mode (compact phrases)
+        print("  🎵 Generating family/mode MELODY fixtures…")
+        melody_fixtures = self.get_mode_family_melody_fixtures()
+        for raw in melody_fixtures:
+            input_part = raw["input"]
+            parents = self._parent_scales_of(
+                input_part["notes"]
+            )  # major/minor parents only
+            diatonic = (
+                None
+                if not input_part.get("key")
+                else self._is_diatonic_pitch_set(input_part["notes"], input_part["key"])
+            )
+            non_diatonic = (
+                []
+                if diatonic in (True, None)
+                else self._non_diatonic_pitches(input_part["notes"], input_part["key"])
+            )
+            modal_labels = self._modal_labels_for(
+                input_part["notes"]
+            )  # modal candidates over major parents
+            classification = self._classify_scale_usage(
+                input_part["notes"], input_part.get("key"), diatonic
+            )
+
+            raw["expected"] = {
+                "parent_scales": parents,
+                "diatonic_in_key": diatonic,
+                "non_diatonic_pitches": non_diatonic,
+                "modal_labels": modal_labels,
+                "classification": classification,
+                "rationale": self._scale_rationale(
+                    input_part["notes"],
+                    input_part.get("key"),
+                    classification,
+                    modal_labels,
+                    parents,
+                    non_diatonic,
+                    None,
+                ),
+            }
+
+            self.test_cases.append(self.create_scale_melody_test(raw))
+
+    def _parent_scales_of(self, notes: List[str]) -> List[str]:
+        """Return ALL parent scales that contain all given notes: major, natural minor, harmonic minor, melodic minor."""
+        if not notes:
+            return []
+
+        # Convert notes to pitch classes for comparison
+        note_pcs = set()
+        for note in notes:
+            pc = self._pc(note)
+            if pc is None:
+                return []  # Invalid note
+            note_pcs.add(pc)
+
+        result = []
+        all_roots = ["C", "G", "D", "A", "E", "B", "F#", "Db", "Ab", "Eb", "Bb", "F"]
+
+        for root in all_roots:
+            root_pc = self._pc(root)
+            if root_pc is None:
+                continue
+
+            # Test Major Scale (Ionian)
+            major_intervals = [0, 2, 4, 5, 7, 9, 11]
+            major_pcs = {(root_pc + iv) % 12 for iv in major_intervals}
+            if note_pcs.issubset(major_pcs):
+                result.append(f"{root} major")
+
+            # Test Natural Minor (Aeolian) - same as relative major but different root
+            natural_minor_intervals = [0, 2, 3, 5, 7, 8, 10]
+            natural_minor_pcs = {(root_pc + iv) % 12 for iv in natural_minor_intervals}
+            if note_pcs.issubset(natural_minor_pcs):
+                result.append(f"{root} minor")
+
+            # Test Harmonic Minor - THE KEY ADDITION!
+            harmonic_minor_intervals = [0, 2, 3, 5, 7, 8, 11]
+            harmonic_minor_pcs = {
+                (root_pc + iv) % 12 for iv in harmonic_minor_intervals
+            }
+            if note_pcs.issubset(harmonic_minor_pcs):
+                result.append(f"{root} harmonic minor")
+
+            # Test Melodic Minor (ascending form)
+            melodic_minor_intervals = [0, 2, 3, 5, 7, 9, 11]
+            melodic_minor_pcs = {(root_pc + iv) % 12 for iv in melodic_minor_intervals}
+            if note_pcs.issubset(melodic_minor_pcs):
+                result.append(f"{root} melodic minor")
+
         return sorted(set(result))
 
     def _enh_norm(self, n: str) -> str:
@@ -1415,6 +1943,90 @@ class ComprehensiveMultiLayerGenerator:
 
         root, mode = mode_name.split(" ", 1)
         return self.get_parent_key(root, mode)
+
+    def _pc(self, name: str) -> Optional[int]:
+        """Pitch-class from note name using self.note_map; returns None if unknown."""
+        return self.note_map.get(self._extract_root(name))
+
+    def _transpose_by_semitones(self, root: str, semitones: int) -> str:
+        """Return note name transposed by semitones using a flat-friendly spelling set."""
+        base = self._pc(root)
+        if base is None:
+            return root
+        target = (base + semitones) % 12
+        notes = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"]
+        return notes[target]
+
+    def _build_scale_from_intervals(
+        self, tonic: str, intervals: List[int]
+    ) -> List[str]:
+        """Construct a pitch collection from semitone intervals relative to tonic."""
+        if self._pc(tonic) is None:
+            return [tonic]
+        return [self._transpose_by_semitones(tonic, iv) for iv in intervals]
+
+    def _characteristic_steps(
+        self, family_name: str, intervals: List[int]
+    ) -> List[int]:
+        """Return offsets (in semitones) to emphasize a family's color tones.
+        We use minimal heuristics: Lydian ♯4, Dorian ♮6, Phrygian ♭2, Mixolydian ♭7, etc.
+        For non-heptatonic (pentatonic/blues), emphasize blue note / anhemitonic gaps.
+        """
+        # Map family highlights by detection of scale degrees present
+        ivs = set(intervals)
+        accents: List[int] = []
+        if 6 in ivs:  # ♯4 in semitones relative to tonic
+            accents.append(6)
+        if 1 in ivs:  # ♭2
+            accents.append(1)
+        if 10 in ivs:  # ♭7
+            accents.append(10)
+        if 8 in ivs:  # ♭6
+            accents.append(8)
+        if 3 in ivs:  # ♭3 / ♯2 (contextual)
+            accents.append(3)
+        if family_name == "Blues Scale" and 6 in ivs:  # ♭5
+            accents.append(6)
+        # De-duplicate while preserving order
+        seen = set()
+        out: List[int] = []
+        for a in accents:
+            if a not in seen:
+                out.append(a)
+                seen.add(a)
+        return out[:2]  # keep it short
+
+    def _build_mode_phrase(
+        self, tonic: str, intervals: List[int], family_name: str
+    ) -> List[str]:
+        """Create a short melodic phrase (~10 notes) in the given mode.
+        Pattern: tonic → stepwise ascent → characteristic leap → descent → tonic.
+        Notes are spelled with the same flat-friendly map as other helpers."""
+        scale = self._build_scale_from_intervals(tonic, intervals)
+        if not scale:
+            return [tonic]
+
+        # Stepwise ascent through the first 4–5 degrees (wrap if needed)
+        ascent = []
+        for i in range(min(5, len(scale))):
+            ascent.append(scale[i % len(scale)])
+
+        # Insert 1–2 characteristic tones by semitone transposition from tonic
+        accents = self._characteristic_steps(family_name, intervals)
+        accent_notes = [self._transpose_by_semitones(tonic, a) for a in accents]
+
+        # Gentle descent touching scale degrees back to tonic
+        descent = []
+        for i in range(3, -1, -1):
+            descent.append(scale[i % len(scale)])
+
+        phrase = [tonic] + ascent + accent_notes + descent + [tonic]
+        # Deduplicate immediate repeats, keep musical feel simple
+        compact: List[str] = []
+        for n in phrase:
+            if not compact or compact[-1] != n:
+                compact.append(n)
+        return compact[:12]
 
     def infer_key_from_progression(self, chords: List[str]) -> Optional[str]:
         """Simple key inference - use first chord as basis"""
@@ -1844,6 +2456,9 @@ class ComprehensiveMultiLayerGenerator:
             "SM_DiatonicInKey",
             "SM_SuggestedTonic",
             "SM_Confidence",
+            "SM_Family",
+            "SM_Mode",
+            "SM_Degree",
         ]
 
         with open(csv_path, "w", newline="") as csvfile:
@@ -1875,6 +2490,67 @@ class ComprehensiveMultiLayerGenerator:
                         ";".join(test.expected_ui.displayed_analyses),
                         test.expected_ui.recommended_pedagogical_level,
                         test.theoretical_basis,
+                        # Scale/melody fields
+                        (
+                            " ".join(test.expected_scale_melody.notes)
+                            if test.expected_scale_melody
+                            else "none"
+                        ),
+                        (
+                            test.expected_scale_melody.key
+                            if test.expected_scale_melody
+                            else "none"
+                        ),
+                        (
+                            test.expected_scale_melody.classification
+                            if test.expected_scale_melody
+                            else "none"
+                        ),
+                        (
+                            ";".join(test.expected_scale_melody.parent_scales)
+                            if test.expected_scale_melody
+                            else "none"
+                        ),
+                        (
+                            str(test.expected_scale_melody.diatonic_in_key)
+                            if test.expected_scale_melody
+                            else "none"
+                        ),
+                        (
+                            test.expected_scale_melody.suggested_tonic
+                            if test.expected_scale_melody
+                            else "none"
+                        ),
+                        (
+                            f"{test.expected_scale_melody.confidence:.3f}"
+                            if test.expected_scale_melody
+                            and test.expected_scale_melody.confidence
+                            else "none"
+                        ),
+                        # SM_Family
+                        (
+                            test.id.split(":")[1]
+                            if test.category == "scale_melody"
+                            and test.id.startswith("FAM:")
+                            and ":" in test.id
+                            else "none"
+                        ),
+                        # SM_Mode
+                        (
+                            test.id.split(":")[4]
+                            if test.category == "scale_melody"
+                            and test.id.startswith("FAM:")
+                            and len(test.id.split(":")) > 4
+                            else "none"
+                        ),
+                        # SM_Degree
+                        (
+                            test.id.split(":")[3]
+                            if test.category == "scale_melody"
+                            and test.id.startswith("FAM:")
+                            and len(test.id.split(":")) > 3
+                            else "none"
+                        ),
                     ]
                 )
 
@@ -1925,6 +2601,28 @@ class ComprehensiveMultiLayerGenerator:
                     f'Medium({dist["medium"]}) Low({dist["low"]})'
                 )
             )
+
+        # Family/Mode coverage summary (scale/melody tests)
+        fam_counts: Dict[str, int] = {}
+        for t in self.test_cases:
+            if t.category == "scale_melody" and t.id.startswith("FAM:"):
+                family_key = t.id.split(":")[1]
+                fam_counts[family_key] = fam_counts.get(family_key, 0) + 1
+        if fam_counts:
+            print("\n🧭 Family/Mode Coverage:")
+            for fam, cnt in sorted(fam_counts.items()):
+                print(f"  {fam}: {cnt} fixtures")
+
+        # Melody family/mode coverage summary
+        mel_counts: Dict[str, int] = {}
+        for t in self.test_cases:
+            if t.category == "scale_melody" and t.id.startswith("FAM_MELODY:"):
+                family_key = t.id.split(":")[1]
+                mel_counts[family_key] = mel_counts.get(family_key, 0) + 1
+        if mel_counts:
+            print("\n🎶 Melody Family/Mode Coverage:")
+            for fam, cnt in sorted(mel_counts.items()):
+                print(f"  {fam}: {cnt} fixtures")
 
         print("\n🎉 MULTI-LAYER TEST REVOLUTION COMPLETE!")
         print("💪 Ready to validate the sophisticated analysis system!")

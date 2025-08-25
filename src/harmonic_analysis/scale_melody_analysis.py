@@ -167,31 +167,58 @@ class ScaleMelodyAnalyzer:
 
     def _detect_parent_scales(self, notes: List[str]) -> List[str]:
         """
-        Detect which major/minor scales contain all the given notes.
+        Detect ALL parent scales that contain all the given notes:
+        major, natural minor, harmonic minor, melodic minor.
 
-        This implements sophisticated enharmonic-aware parent scale detection.
+        This implements comprehensive parent scale detection for exotic modes.
         """
-        parent_scales = []
-        note_pitch_classes = self._notes_to_pitch_classes(notes)
+        if not notes:
+            return []
 
+        # Convert notes to pitch classes for comparison
+        note_pitch_classes = self._notes_to_pitch_classes(notes)
         if not note_pitch_classes or None in note_pitch_classes:
             return []
 
         note_pc_set = set(note_pitch_classes)
 
-        # Test each major key
-        for major_root in self.major_keys:
-            major_pc_set = self._get_major_scale_pitch_classes(major_root)
+        parent_scales = []
 
-            # If all notes fit in this major scale
+        # Test each possible root
+        for major_root in self.major_keys:
+            major_root_pc = self.note_map.get(major_root)
+            if major_root_pc is None:
+                continue
+
+            # Test Major Scale (Ionian)
+            major_intervals = [0, 2, 4, 5, 7, 9, 11]
+            major_pc_set = {(major_root_pc + iv) % 12 for iv in major_intervals}
             if note_pc_set.issubset(major_pc_set):
                 parent_scales.append(f"{major_root} major")
 
-                # Add relative minor
-                relative_minor_pc = (self.note_map[major_root] + 9) % 12
-                relative_minor_root = self._pitch_class_to_note(relative_minor_pc)
-                if relative_minor_root:
-                    parent_scales.append(f"{relative_minor_root} minor")
+            # Test Natural Minor (Aeolian) - same as relative major but different root
+            natural_minor_intervals = [0, 2, 3, 5, 7, 8, 10]
+            natural_minor_pc_set = {
+                (major_root_pc + iv) % 12 for iv in natural_minor_intervals
+            }
+            if note_pc_set.issubset(natural_minor_pc_set):
+                parent_scales.append(f"{major_root} minor")
+
+            # Test Harmonic Minor - THE KEY ADDITION!
+            harmonic_minor_intervals = [0, 2, 3, 5, 7, 8, 11]
+            harmonic_minor_pc_set = {
+                (major_root_pc + iv) % 12 for iv in harmonic_minor_intervals
+            }
+            if note_pc_set.issubset(harmonic_minor_pc_set):
+                parent_scales.append(f"{major_root} harmonic minor")
+
+            # Test Melodic Minor (ascending form)
+            melodic_minor_intervals = [0, 2, 3, 5, 7, 9, 11]
+            melodic_minor_pc_set = {
+                (major_root_pc + iv) % 12 for iv in melodic_minor_intervals
+            }
+            if note_pc_set.issubset(melodic_minor_pc_set):
+                parent_scales.append(f"{major_root} melodic minor")
 
         return sorted(set(parent_scales))
 
@@ -278,10 +305,14 @@ class ScaleMelodyAnalyzer:
         Generate modal labels for all potential tonic centers.
 
         For each note that could serve as a tonic, determine what mode it would be
-        in each parent scale.
+        in each parent scale. Uses priority system to prevent overwriting more
+        appropriate modal labels with less appropriate ones.
         """
         modal_labels = {}
         note_roots = {self._extract_root(note) for note in notes}
+
+        # Build all possible modal interpretations with priorities
+        modal_candidates = {}  # note_root -> [(priority, label), ...]
 
         for parent_scale in parent_scales:
             if not parent_scale.endswith(" major"):
@@ -310,9 +341,99 @@ class ScaleMelodyAnalyzer:
                 if degree in degree_to_mode:
                     mode_index = degree_to_mode[degree]
                     mode_name = self.mode_names[mode_index]
-                    modal_labels[note_root] = f"{note_root} {mode_name}"
+                    label = f"{note_root} {mode_name}"
+
+                    # Priority system to prevent inappropriate overwriting:
+                    # Higher priority (lower number) = more musically appropriate
+                    priority = self._calculate_modal_priority(
+                        note_root, parent_root, mode_name
+                    )
+
+                    if note_root not in modal_candidates:
+                        modal_candidates[note_root] = []
+                    modal_candidates[note_root].append((priority, label))
+
+        # Select the highest priority (lowest number) modal label for each note
+        for note_root, candidates in modal_candidates.items():
+            if candidates:
+                # Sort by priority (lowest number = highest priority)
+                candidates.sort(key=lambda x: x[0])
+                best_priority, best_label = candidates[0]
+
+                modal_labels[note_root] = best_label
 
         return modal_labels
+
+    def _calculate_modal_priority(
+        self, tonic_note: str, parent_root: str, mode_name: str
+    ) -> int:
+        """
+        Calculate priority for modal interpretations to prevent overwriting bug.
+
+        Lower numbers = higher priority (more musically appropriate).
+
+        Priority rules:
+        1. Direct relationships (note matches parent scale) - Ionian/major
+        2. Natural relative relationships (vi = Aeolian)
+        3. Common modal relationships by musical frequency
+        4. Distance-based tie breaking
+        """
+        tonic_pc = self.note_map.get(tonic_note, 0)
+        parent_pc = self.note_map.get(parent_root, 0)
+
+        # Calculate scale degree first (needed for priority rules)
+        scale_degree_semitones = (tonic_pc - parent_pc) % 12
+        semitone_to_degree = {
+            0: 1,  # I (unison)
+            2: 2,  # ii (major second)
+            4: 3,  # iii (major third)
+            5: 4,  # IV (perfect fourth)
+            7: 5,  # V (perfect fifth)
+            9: 6,  # vi (major sixth)
+            11: 7,  # vii (major seventh)
+        }
+        scale_degree = semitone_to_degree.get(scale_degree_semitones, 0)
+
+        # Rule 1: Direct match (tonic note is the parent scale root)
+        if tonic_note == parent_root:
+            return 1  # Highest priority - direct relationship (Ionian)
+
+        # Rule 2: Contextual modal relationships - only boost when it's the clear best choice
+        # Be more selective about when to apply strong boosts
+
+        # Only boost modal relationships when they're from common, fundamental parent scales
+        if parent_root == "C":  # C major is the most fundamental reference
+            if scale_degree == 2 and mode_name == "Dorian":
+                return 1.1  # D Dorian from C major is canonical
+            elif scale_degree == 5 and mode_name == "Mixolydian":
+                return 1.2  # G Mixolydian from C major is canonical
+            elif scale_degree == 3 and mode_name == "Phrygian":
+                return 1.3  # E Phrygian from C major is canonical
+            elif scale_degree == 6 and mode_name == "Aeolian":
+                return (
+                    1.4  # A Aeolian from C major is canonical (natural relative minor)
+                )
+
+        # Rule 3: Standard modal relationships in order of musical commonality
+        mode_base_priorities = {
+            "Ionian": 3,  # Major scale
+            "Dorian": 3,  # Popular modal sound (ii)
+            "Phrygian": 4,  # Less common (iii)
+            "Lydian": 4,  # Less common (IV)
+            "Mixolydian": 3,  # Popular in rock/folk (V)
+            "Aeolian": 4,  # Natural minor (vi) - only high priority for relative relationships
+            "Locrian": 5,  # Rare (vii)
+        }
+
+        base_priority = mode_base_priorities.get(mode_name, 10)
+
+        # Rule 4: Final priority calculation with distance penalty
+        distance = min(abs(tonic_pc - parent_pc), 12 - abs(tonic_pc - parent_pc))
+        distance_penalty = distance * 0.1  # Small penalty for distant relationships
+
+        final_priority = base_priority + distance_penalty
+
+        return final_priority
 
     def _infer_melody_tonic(
         self, notes: List[str]

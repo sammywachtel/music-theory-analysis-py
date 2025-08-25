@@ -396,6 +396,20 @@ def format_scale_melody_analysis(result) -> Dict[str, Any]:
         # Prefer the most likely modal label or the first available
         if result.suggested_tonic and result.suggested_tonic in result.modal_labels:
             mode_name = result.modal_labels[result.suggested_tonic]
+        elif result.notes and len(result.notes) > 0:
+            # For scales, use the first note as the assumed tonic
+            first_note = result.notes[0]
+            # Extract just the note name without octave
+            first_note_root = first_note.split()[0] if " " in first_note else first_note
+            first_note_root = re.sub(
+                r"[0-9]", "", first_note_root
+            )  # Remove octave numbers
+
+            if first_note_root in result.modal_labels:
+                mode_name = result.modal_labels[first_note_root]
+            else:
+                # Fallback to first available modal label
+                mode_name = list(result.modal_labels.values())[0]
         else:
             mode_name = list(result.modal_labels.values())[0]
     else:
@@ -434,7 +448,9 @@ def format_scale_melody_analysis(result) -> Dict[str, Any]:
             "analysis": analysis_text,
             "mode_name": mode_name,
             "parent_key": (
-                result.parent_scales[0] if result.parent_scales else result.key
+                result.key
+                if result.key
+                else (result.parent_scales[0] if result.parent_scales else None)
             ),
             "classification": result.classification,
             "modal_labels": result.modal_labels,
