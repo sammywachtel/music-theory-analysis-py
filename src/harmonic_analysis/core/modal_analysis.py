@@ -5,8 +5,8 @@ Enhanced modal analysis engine with evidence-based confidence scoring.
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from .chord_logic import ChordMatch, find_chord_matches
-from .scales import NOTE_TO_PITCH_CLASS, get_parent_key
+from ..utils.chord_logic import ChordMatch, find_chord_matches
+from ..utils.scales import NOTE_TO_PITCH_CLASS, get_parent_key
 
 
 @dataclass

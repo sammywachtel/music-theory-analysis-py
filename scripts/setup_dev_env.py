@@ -8,7 +8,6 @@ pre-commit hooks, and IDE integration for optimal code quality workflow.
 
 import os
 import subprocess
-import sys
 from pathlib import Path
 
 
@@ -126,13 +125,36 @@ def create_ide_config():
 </profile>
         """
 
-        print("   💡 PyCharm detected - configure:")
-        print("      1. File → Settings → Tools → External Tools")
-        print("      2. Add 'Black Format' tool: python scripts/quality_check.py --fix")
-        print("      3. Add 'Quality Check' tool: python scripts/quality_check.py")
-        print("      4. Enable real-time code inspection")
+        print("   💡 PyCharm detected - configure real-time inspection:")
+        print("      📋 STEP-BY-STEP PYCHARM SETUP:")
+        print("      1️⃣ File → Settings → Editor → Inspections")
+        print("         ✅ Enable 'Python' → 'PEP 8 coding style violation'")
+        print("         ✅ Enable 'Python' → 'Type checker compatibility'")
+        print("")
+        print("      2️⃣ File → Settings → Tools → External Tools → Add:")
+        print("         🔧 Name: 'Quality Check Fix'")
+        print("         🔧 Program: python")
+        print("         🔧 Arguments: scripts/quality_check.py --fix")
+        print("         🔧 Working Directory: $ProjectFileDir$")
+        print("")
+        print(
+            "      💡 SHORTCUT: Use keyboard shortcut ⌘, (Ctrl+Alt+S on Windows/Linux)"
+        )
+        print("          to quickly open Settings dialog")
+        print("")
+        print("      3️⃣ File → Settings → Tools → File Watchers (Optional):")
+        print("         👁️ Add Black formatter for auto-format on save")
+        print("         👁️ Add isort for auto-import organization")
+        print("")
+        print("      4️⃣ Enable real-time highlighting:")
+        print("         ⚙️ Settings → Editor → General → Code Completion")
+        print("         ✅ 'Show suggestions as you type'")
+        print("         ✅ 'Add unambiguous imports on the fly'")
+        print("")
+        print("      🎯 Result: Real-time red/yellow underlines for issues!")
+        print("      📖 Full details in scripts/README.md")
 
-    # VS Code configuration
+    # VS Code configuration`
     vscode_dir = Path(".vscode")
     if vscode_dir.exists():
         vscode_config = {

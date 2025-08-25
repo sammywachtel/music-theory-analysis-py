@@ -6,7 +6,7 @@ instead of failing, to avoid blocking CI/CD while highlighting areas for improve
 """
 
 import warnings
-from typing import List, Optional
+from typing import List
 
 
 class EdgeCaseWarning(UserWarning):
